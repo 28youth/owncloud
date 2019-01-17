@@ -1,6 +1,9 @@
 <?php
 
 use Illuminate\Http\Request;
+use XigeCloud\Http\Controllers\APIs;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Contracts\Routing\Registrar as RouteContract;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,4 +18,8 @@ use Illuminate\Http\Request;
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
+});
+
+Route::group(['middleware' => 'auth:api'], function (RouteContract $api) {
+
 });

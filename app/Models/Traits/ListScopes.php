@@ -9,7 +9,6 @@ Trait ListScopes
     /**
      * 格式化 filter 参数，转换成sql
      *
-     * @author 28youth
      * @return  \Illuminate\Database\Eloquent\Builder
      */
     public function scopeFilterByQueryString(Builder $query): Builder
@@ -23,7 +22,6 @@ Trait ListScopes
     /**
      * 格式化 sort 参数.
      *
-     * @author 28youth
      * @param  @return  \Illuminate\Database\Eloquent\Builder
      */
     public function scopeSortByQueryString(Builder $query): Builder
@@ -38,7 +36,6 @@ Trait ListScopes
     /**
      * 返回带分页信息的数据
      *
-     * @author 28youth
      * @param  \Illuminate\Database\Eloquent\Builder
      * @param  integer $pagesize
      * @return mixed
@@ -64,10 +61,10 @@ Trait ListScopes
     {
         $inputString = request('filters');
         if (!$inputString) return false;
-        $inputArr = str_split(request('filters'));
-        $filters = [];
         $key = [0];
+        $filters = [];
         $implodedKey = '0';
+        $inputArr = str_split($inputString);
         foreach ($inputArr as $string) {
             switch ($string) {
                 case'(':
