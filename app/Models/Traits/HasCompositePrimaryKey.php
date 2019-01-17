@@ -1,6 +1,6 @@
 <?php 
 
-namespace App\Models\Traits;
+namespace XigeCloud\Models\Traits;
 
 use Illuminate\Database\Eloquent\Builder;
 

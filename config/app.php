@@ -169,11 +169,11 @@ return [
         /*
          * Application Service Providers...
          */
-        App\Providers\AppServiceProvider::class,
-        App\Providers\AuthServiceProvider::class,
-        // App\Providers\BroadcastServiceProvider::class,
-        App\Providers\EventServiceProvider::class,
-        App\Providers\RouteServiceProvider::class,
+        XigeCloud\Providers\AppServiceProvider::class,
+        XigeCloud\Providers\AuthServiceProvider::class,
+        // XigeCloud\Providers\BroadcastServiceProvider::class,
+        XigeCloud\Providers\EventServiceProvider::class,
+        XigeCloud\Providers\RouteServiceProvider::class,
 
     ],
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Providers;
+namespace XigeCloud\Providers;
 
 use Illuminate\Support\ServiceProvider;
 
