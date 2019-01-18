@@ -2,6 +2,7 @@
 
 namespace XigeCloud\Models;
 
+use Overtrue\Pinyin\Pinyin;
 use Illuminate\Database\Eloquent\Model;
 
 class Category extends Model
@@ -37,6 +38,15 @@ class Category extends Model
     public function setParentIdAttribute($value)
     {
     	$this->attributes['parent_id'] = !empty($value) ? $value : 0;
+    }
+
+    public function setSymbolAttribute($value)
+    {
+        $original = $this->getOriginal('name');
+        if ($original != $this->name) {
+            $pinyin = new Pinyin();
+            $this->attributes['symbol'] = $pinyin->abbr($this->name);
+        }
     }
 
     public function _parent()
