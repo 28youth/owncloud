@@ -10,6 +10,7 @@ class Category extends Model
 
     protected $fillable = [
     	'name',
+        'symbol',
     	'parent_id',
     	'is_system',
     	'config_number',
@@ -18,6 +19,13 @@ class Category extends Model
     	'config_format',
     	'config_path',
     	'description'
+    ];
+
+    protected $casts = [
+        'config_number' => 'array',
+        'config_operate' => 'array',
+        'config_ability' => 'array',
+        'config_format' => 'array',
     ];
 
     /**
@@ -29,5 +37,15 @@ class Category extends Model
     public function setParentIdAttribute($value)
     {
     	$this->attributes['parent_id'] = !empty($value) ? $value : 0;
+    }
+
+    public function _parent()
+    {
+        return $this->belongsTo(self::class, 'parent_id');
+    }
+
+    public function _children()
+    {
+        return $this->hasMany(self::class, 'parent_id');
     }
 }
