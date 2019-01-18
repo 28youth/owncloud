@@ -42,7 +42,8 @@ return [
         ],
 
         'api' => [
-            'driver' => 'token',
+            // 'driver' => 'token',
+            'driver' => 'oa',
             'provider' => 'users',
         ],
     ],
@@ -66,8 +67,9 @@ return [
 
     'providers' => [
         'users' => [
-            'driver' => 'eloquent',
-            'model' => XigeCloud\User::class,
+            'driver' => 'oa',
+            // 'driver' => 'eloquent',
+            // 'model' => XigeCloud\User::class,
         ],
 
         // 'users' => [
