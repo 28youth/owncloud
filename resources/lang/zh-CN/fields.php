@@ -7,7 +7,7 @@ return [
 		'name' => '分类名称',
 		'symbol' => '分类编号',
 		'parent_id' => '父分类ID',
-		'is_system' => '是否系统分类',
+		'is_lock' => '是否锁定',
 		'config_number' => '文件编号配置',
 		'config_number.*' => '文件编号配置',
 		'config_operate' => '文件操作配置',
@@ -18,5 +18,21 @@ return [
 		'config_format.*' => '文件格式配置',
 		'config_path' => '文件路径配置',
 		'description' => '分类备注',
+	],
+
+	// 权限
+	'ability' => [
+		'name' => '权限名',
+		'parent_id' => '上级ID',
+		'is_lock' => '是否锁定',
+		'sort' => '排序值',
+	],
+
+	// 角色
+	'role' => [
+		'name' => '角色名',
+		'abilities' => '权限',
+		'categories' => '分类',
+		'staff' => '员工'
 	],
 ];

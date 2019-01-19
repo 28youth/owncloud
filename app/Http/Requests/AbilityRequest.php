@@ -40,4 +40,14 @@ class AbilityRequest extends FormRequest
 
         return $rules;
     }
+
+    /**
+     * Get custom attributes for validator errors.
+     *
+     * @return array
+     */
+    public function attributes()
+    {
+        return array_dot(trans('fields.ability'));
+    }
 }
