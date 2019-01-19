@@ -26,13 +26,14 @@ class CategoryRequest extends FormRequest
         $rules = [
             'name' => ['required', unique_validator('categories', false), 'max:20'],
             'symbol' => ['required', unique_validator('categories', false), 'max:10'],
-            'is_system' => 'nullable|in:0,1',
-            'config_number.*' => 'in:cateNo,YY,mm,dd,YY-mm-dd,YY-mm',
-            'config_operate.*' => 'in:create,approval,publish,change,destroy',
-            'config_ability.*' => 'in:upload,download,move,rename,preview,delete,isShare,isUpdate',
-            'config_format.*' => 'in:online,text,image,audio,video,xls,othor',
+            'config_number.*' => 'distinct|in:cateNo,YY,mm,dd,YY-mm-dd,YY-mm',
+            'config_operate.*' => 'distinct|in:create,approval,publish,change,destroy',
+            'config_ability.*' => 'distinct|in:upload,download,move,rename,preview,delete,isShare,isUpdate',
+            'config_format.*' => 'distinct|in:online,text,image,audio,video,xls,othor',
             'config_path' => 'string|max:100',
             'description' => 'max:100',
+            'is_lock' => 'numeric|in:0,1',
+            'parent_id' => 'numeric',
         ];
         if (strtolower($this->getMethod()) === 'patch') {
             $rules = array_merge($rules, [

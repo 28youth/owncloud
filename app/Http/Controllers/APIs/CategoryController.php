@@ -15,7 +15,7 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        $list = Category::get();
+        $list = Category::with('_parent', '_children')->get();
 
         return response()->json($list);
     }

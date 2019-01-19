@@ -3,17 +3,20 @@
 namespace XigeCloud\Models;
 
 use Overtrue\Pinyin\Pinyin;
+use XigeCloud\Models\Traits\ListScopes;
 use Illuminate\Database\Eloquent\Model;
 
 class Category extends Model
 {
+    use ListScopes;
+    
 	protected $hidden = ['created_at', 'updated_at', 'deleted_at'];
 
     protected $fillable = [
     	'name',
         'symbol',
     	'parent_id',
-    	'is_system',
+    	'is_lock',
     	'config_number',
     	'config_operate',
     	'config_ability',
@@ -29,17 +32,16 @@ class Category extends Model
         'config_format' => 'array',
     ];
 
-    /**
-     * Set the categories parent id.
-     * 
-     * @param string $value
-     * @return void
-     */
     public function setParentIdAttribute($value)
     {
     	$this->attributes['parent_id'] = !empty($value) ? $value : 0;
     }
 
+    public function setIsLockAttribute($value)
+    {
+        $this->attributes['is_lock'] = !empty($value) ? $value : 0;
+    }
+    
     public function setSymbolAttribute($value)
     {
         $original = $this->getOriginal('name');
