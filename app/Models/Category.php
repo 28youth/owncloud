@@ -45,7 +45,7 @@ class Category extends Model
         $original = $this->getOriginal('name');
         if ($original != $this->name) {
             $pinyin = new Pinyin();
-            $this->attributes['symbol'] = $pinyin->abbr($this->name);
+            $this->attributes['symbol'] = strtoupper($pinyin->abbr($this->name));
         }
     }
 
