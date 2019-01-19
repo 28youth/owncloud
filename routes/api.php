@@ -24,4 +24,7 @@ Route::group(['middleware' => 'auth:api'], function (RouteContract $api) {
 
 	// 获取分类列表
 	$api->apiResource('file/categories', APIs\CategoryController::class);
+
+	// 获取分类列表
+	$api->apiResource('file/abilities', APIs\AbilityController::class);
 });

@@ -2,10 +2,13 @@
 
 namespace XigeCloud\Models;
 
+use XigeCloud\Models\Traits\ListScopes;
 use Illuminate\Database\Eloquent\Model;
 
 class Tag extends Model
 {
+    use ListScopes;
+    
     protected $hidden = ['created_at', 'updated_at'];
 
     /**
