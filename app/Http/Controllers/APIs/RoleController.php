@@ -41,54 +41,86 @@ class RoleController extends Controller
                 $role->categories()->attach($data['categories']);
             }
             if (!empty($data['staff'])) {
-                $list = array_map(function ($k, $v) use ($role) {
+                $list = array_map(function ($v) use ($role) {
                     return [
                         'staff_sn' => $v,
                         'role_id' => $role->id,
                     ];
                 }, $data['staff']);
 
-                \DB::table('staff_has_roles')->where('role_id', $role->id)->delete();
                 \DB::table('staff_has_roles')->insert($list);
             }
             
-            $role->load(['abilities', 'categories']);
+            $role->load(['abilities', 'categories', 'staff']);
 
-            return response()->json($role, 201);
+            return response()->json(RoleResource::make($role), 201);
         });
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+     * @param  Role $role
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Role $role)
     {
-        //
+        $role->load(['abilities', 'categories', 'staff']);
+
+        return RoleResource::make($role);
     }
 
     /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
+     * @param  Role $role
      * @return \Illuminate\Http\Response
      */
-    public function update(RoleRequest $request, $id)
+    public function update(RoleRequest $request, Role $role)
     {
-        //
+        $data = $request->all();
+        $role->name = $data['name'];
+
+        return $role->getConnection()->transaction(function () use ($role, $data) {
+            $role->save();
+            if (!empty($data['abilities'])) {
+                $role->abilities()->sync($data['abilities']);
+            }
+            if (!empty($data['categories'])) {
+                $role->categories()->sync($data['categories']);
+            }
+            if (!empty($data['staff'])) {
+                $list = array_map(function ($v) use ($role) {
+                    return [
+                        'staff_sn' => $v,
+                        'role_id' => $role->id,
+                    ];
+                }, $data['staff']);
+
+                $role->staff()->delete();
+                \DB::table('staff_has_roles')->insert($list);
+            }
+
+            $role->load(['abilities', 'categories', 'staff']);
+
+            return response()->json(RoleResource::make($role), 201);
+        });
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * @param  Role $role
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Role $role)
     {
-        //
+        return $role->getConnection()->transaction(function () use ($role) {
+            $role->staff()->delete();
+            $role->delete();
+
+            return response()->json(null, 204);
+        });
     }
 }

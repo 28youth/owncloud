@@ -32,7 +32,9 @@ return [
 	'role' => [
 		'name' => '角色名',
 		'abilities' => '权限',
+		'abilities.*' => '权限ID',
 		'categories' => '分类',
+		'categories.*' => '分类ID',
 		'staff' => '员工'
 	],
 ];

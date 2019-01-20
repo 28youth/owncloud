@@ -27,7 +27,9 @@ class RoleRequest extends FormRequest
             'name' => 'required|unique:roles,name,NULL,name,deleted_at,NULL|max:20',
             'staff' => 'array',
             'abilities' => 'array',
+            'abilities.*' => 'exists:abilities,id',
             'categories' => 'array',
+            'categories.*' => 'exists:categories,id',
         ];
         if ($this->getMethod() === 'PATCH') {
             $rules = array_merge($rules, [
