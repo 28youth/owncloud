@@ -30,4 +30,7 @@ Route::group(['middleware' => 'auth:api'], function (RouteContract $api) {
 
 	// 获取角色列表
 	$api->apiResource('roles', APIs\RoleController::class);
+
+	// 获取标签分类列表
+	$api->apiResource('tag/categories', APIs\TagCateController::class);
 });

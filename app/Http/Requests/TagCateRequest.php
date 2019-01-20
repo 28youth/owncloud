@@ -4,7 +4,7 @@ namespace XigeCloud\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class RoleRequest extends FormRequest
+class TagCateRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,18 +24,16 @@ class RoleRequest extends FormRequest
     public function rules()
     {
         $rules = [
-            'name' => 'required|unique:roles,name,NULL,name,deleted_at,NULL|max:20',
-            'staff' => 'array',
-            'abilities' => 'array',
-            'abilities.*' => 'exists:abilities,id',
-            'categories' => 'array',
-            'categories.*' => 'exists:categories,id',
+            'name' => 'required|unique:tag_categories|max:20',
+            'color' => 'string|max:7',
+            'rank' => 'numeric|min:0',
         ];
+
         if (strtolower($this->getMethod()) === 'patch') {
             $rules = array_merge($rules, [
                 'name' => [
                     'required',
-                    unique_validator('roles'),
+                    unique_validator('tag_categories'),
                 ],
             ]);
         }
@@ -50,6 +48,6 @@ class RoleRequest extends FormRequest
      */
     public function attributes()
     {
-        return array_dot(trans('fields.role'));
+        return array_dot(trans('fields.tag_categories'));
     }
 }

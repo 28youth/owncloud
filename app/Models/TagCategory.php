@@ -10,6 +10,12 @@ class TagCategory extends Model
     use ListScopes;
     
 	protected $hidden = ['created_at', 'updated_at'];
+
+    protected $fillable = [
+        'name',
+        'color',
+        'rank',
+    ];
 	
     /**
      * Has tags of the category.
@@ -18,6 +24,6 @@ class TagCategory extends Model
      */
     public function tags()
     {
-        return $this->hasMany(Tag::class, 'tag_category_id', 'id')->orderBy('rank', 'desc');
+        return $this->hasMany(Tag::class, 'tag_category_id', 'id');
     }
 }

@@ -37,4 +37,9 @@ return [
 		'categories.*' => '分类ID',
 		'staff' => '员工'
 	],
+	'tag_categories' => [
+		'name' => '名称',
+		'color' => '验证',
+		'rank' => '排序值',
+	],
 ];
