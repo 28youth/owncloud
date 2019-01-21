@@ -1,6 +1,6 @@
 <?php
 
-namespace XigeCloud\Http\Controllers\APIs;
+namespace XigeCloud\Http\Controllers\API;
 
 use Illuminate\Http\Request;
 use XigeCloud\Models\TagCategory;

@@ -1,6 +1,6 @@
 <?php
 
-namespace XigeCloud\Http\Controllers\APIs;
+namespace XigeCloud\Http\Controllers\API;
 
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Routing\Controller as BaseController;

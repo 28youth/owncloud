@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Http\Request;
-use XigeCloud\Http\Controllers\APIs;
+use XigeCloud\Http\Controllers\API;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Contracts\Routing\Registrar as RouteContract;
 
@@ -23,14 +23,14 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::group(['middleware' => 'auth:api'], function (RouteContract $api) {
 
 	// 获取分类列表
-	$api->apiResource('file/categories', APIs\CategoryController::class);
+	$api->apiResource('file/categories', API\CategoryController::class);
 
 	// 获取权限列表
-	$api->apiResource('file/abilities', APIs\AbilityController::class);
+	$api->apiResource('file/abilities', API\AbilityController::class);
 
 	// 获取角色列表
-	$api->apiResource('roles', APIs\RoleController::class);
+	$api->apiResource('roles', API\RoleController::class);
 
 	// 获取标签分类列表
-	$api->apiResource('tag/categories', APIs\TagCateController::class);
+	$api->apiResource('tag/categories', API\TagCateController::class);
 });
