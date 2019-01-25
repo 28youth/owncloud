@@ -14,7 +14,7 @@ class CreatePoliciesTable extends Migration
     public function up()
     {
         Schema::create('policies', function (Blueprint $table) {
-            $table->mediumIncrements('id');
+            $table->smallIncrements('id');
             $table->char('policy_name', 20)->comment('策略名');
             $table->char('policy_type', 6)->comment('上传类型 本地:local 远程:server');
             $table->char('server_host', 32)->default()->comment('上传服务器IP');
