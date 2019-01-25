@@ -51,6 +51,11 @@ class Category extends Model
         }
     }
 
+    public function service()
+    {
+        return $this->belongsTo(Service::class, 'service_id');
+    }
+
     public function _parent()
     {
         return $this->belongsTo(self::class, 'parent_id');
