@@ -51,9 +51,9 @@ class Category extends Model
         }
     }
 
-    public function service()
+    public function policies()
     {
-        return $this->belongsTo(Service::class, 'service_id');
+        return $this->belongsTo(Policy::class, 'policy_id');
     }
 
     public function _parent()

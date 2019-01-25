@@ -17,13 +17,11 @@ class CreateCategoriesTable extends Migration
             $table->mediumIncrements('id');
             $table->char('name', 20)->comment('分类名称');
             $table->char('symbol', 10)->comment('分类编号（参与文件名生成）');
-            $table->smallInteger('service_id')->comment('服务器配置ID');
+            $table->smallInteger('policy_id')->comment('分类文件策略');
             $table->unsignedMediumInteger('parent_id')->default(0)->comment('上级分类ID');
             $table->unsignedSmallInteger('is_lock')->default(0)->comment('锁定 0:否 1:是');
-            $table->char('namerule', 100)->nullable()->comment('文件编号规则');
             $table->char('operate', 100)->nullable()->comment('文件操作');
             $table->char('abilities', 100)->nullable()->comment('操作权限');
-            $table->char('filetype', 100)->nullable()->comment('文件格式');
             $table->char('description', 100)->nullable()->comment('分类备注');
 
             $table->timestamps();
