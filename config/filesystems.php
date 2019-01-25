@@ -46,6 +46,23 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app'),
+            'url' => env('APP_URL').'/storage',
+        ],
+
+        'sftp' => [
+            'driver' => 'sftp',
+            'host' => '118.126.117.251',
+            'username' => 'root',
+            // 'password' => '',
+
+            // 基于 SSH 密钥的身份验证设置...
+            'privateKey' => storage_path('authorized_keys'),
+            // 'password' => 'encryption-password',
+
+            // 可选的 SFTP 配置...
+            // 'port' => 22,
+            'root' => '/data/',
+            // 'timeout' => 30,
         ],
 
         'public' => [
