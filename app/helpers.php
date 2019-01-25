@@ -82,3 +82,70 @@ if (!function_exists('array_to_tree')) {
         return $tree;
     }
 }
+
+if (!function_exists('makeFolder')) {
+    /**
+     * 生成文件路径.
+     * 
+     * @param  string $rule
+     * @param  int $userID
+     * 
+     * @return string
+     */
+    function makeFolder($rule, $user = null)
+    {
+        $policy = [
+            '{uid}' => $user ?? request()->user()->staff_sn,
+            '{date}' => date('Ymd'),
+            '{timestamp}' => time(),
+            '{datetime}' => date('YmdHis'), 
+            '{randomkey8}' => getRandomKey(8),
+            '{randomkey16}' => getRandomKey(16),
+        ];
+        return trim(strtr($rule, $policy), '/');
+    }
+}
+
+if (!function_exists('makeFileName')) {
+    /**
+     * 生成文件名.
+     * 
+     * @param  string $rule
+     * @param  string $origin
+     * 
+     * @return string
+     */
+    function makeFileName($rule, $origin, $user = null)
+    {
+        $policy = [
+            '{uid}' => $user ?? request()->user()->staff_sn,
+            '{date}' => date('Ymd'),
+            '{timestamp}' => time(),
+            '{originname}' => $origin,
+            '{datetime}' => date('YmdHis'), 
+            '{randomkey8}' => getRandomKey(8),
+            '{randomkey16}' => getRandomKey(16),
+        ];
+
+        return trim(strtr($rule, $policy), '_');
+    }
+}
+
+if (!function_exists('getRandomKey')) {
+    /**
+     * 生成随机指定长度字符串.
+     * 
+     * @param  integer $length
+     * 
+     * @return string
+     */
+    function getRandomKey($length = 16)
+    {
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'; 
+        $randomString = ''; 
+        for ($i = 0; $i < $length; $i++) { 
+            $randomString .= $characters[mt_rand(0, strlen($characters) - 1)]; 
+        }
+        return $randomString;
+    }
+}
