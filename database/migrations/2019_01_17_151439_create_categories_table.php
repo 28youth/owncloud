@@ -20,9 +20,13 @@ class CreateCategoriesTable extends Migration
             $table->smallInteger('policy_id')->comment('分类文件策略');
             $table->unsignedMediumInteger('parent_id')->default(0)->comment('上级分类ID');
             $table->unsignedSmallInteger('is_lock')->default(0)->comment('锁定 0:否 1:是');
-            $table->char('operate', 100)->nullable()->comment('文件操作');
-            $table->char('abilities', 100)->nullable()->comment('操作权限');
-            $table->char('description', 100)->nullable()->comment('分类备注');
+            $table->char('operate', 100)->default('')->comment('文件操作');
+            $table->char('abilities', 100)->default('')->comment('操作权限');
+            $table->char('dirrule')->default('')->comment('目录规则');
+            $table->char('namerule')->default('')->comment('文件名规则');
+            $table->char('filetype', 100)->default('')->comment('文件格式');
+            $table->bigInteger('max_size')->default(0)->comment('单文件最大大小');
+            $table->char('description', 100)->default('')->comment('分类备注');
 
             $table->timestamps();
             $table->softDeletes();
