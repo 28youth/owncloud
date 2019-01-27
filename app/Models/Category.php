@@ -17,19 +17,20 @@ class Category extends Model
         'symbol',
     	'parent_id',
     	'is_lock',
-    	'config_number',
-    	'config_operate',
-    	'config_ability',
-    	'config_format',
-    	'config_path',
+    	'operate',
+    	'abilities',
+    	'dirrule',
+    	'namerule',
+    	'filetype',
     	'description'
     ];
 
     protected $casts = [
-        'config_number' => 'array',
-        'config_operate' => 'array',
-        'config_ability' => 'array',
-        'config_format' => 'array',
+        'operate' => 'array',
+        'ability' => 'array',
+        'dirrule' => 'array',
+        'namerule' => 'array',
+        'filetype' => 'array',
     ];
 
     public function setParentIdAttribute($value)
@@ -51,7 +52,7 @@ class Category extends Model
         }
     }
 
-    public function policies()
+    public function policy()
     {
         return $this->belongsTo(Policy::class, 'policy_id');
     }
