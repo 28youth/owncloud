@@ -83,7 +83,7 @@ if (!function_exists('array_to_tree')) {
     }
 }
 
-if (!function_exists('makeFolder')) {
+if (!function_exists('makeFilePath')) {
     /**
      * 生成文件路径.
      * 
@@ -92,16 +92,17 @@ if (!function_exists('makeFolder')) {
      * 
      * @return string
      */
-    function makeFolder($rule, $user = null)
+    function makeFilePath($rule)
     {
-        $policy = [
-            '{uid}' => $user ?? request()->user()->staff_sn,
+        $policy = array_filter([
+            '{staff_sn}' => request()->user()->staff_sn ?? '',
+            '{shop_sn}' => request()->user()->shop_sn ?? '',
             '{date}' => date('Ymd'),
             '{timestamp}' => time(),
             '{datetime}' => date('YmdHis'), 
-            '{randomkey8}' => getRandomKey(8),
-            '{randomkey16}' => getRandomKey(16),
-        ];
+            '{randomkey8}' => str_random(8),
+            '{randomkey16}' => str_random(16),
+        ]);
         return trim(strtr($rule, $policy), '/');
     }
 }
@@ -115,37 +116,19 @@ if (!function_exists('makeFileName')) {
      * 
      * @return string
      */
-    function makeFileName($rule, $origin, $user = null)
+    function makeFileName($rule, $origin = null)
     {
-        $policy = [
-            '{uid}' => $user ?? request()->user()->staff_sn,
+        $policy = array_filter([
+            '{staff_sn}' => request()->user()->staff_sn ?? '',
+            '{shop_sn}' => request()->user()->shop_sn ?? '',
+            '{originname}' => $origin,
             '{date}' => date('Ymd'),
             '{timestamp}' => time(),
-            '{originname}' => $origin,
             '{datetime}' => date('YmdHis'), 
-            '{randomkey8}' => getRandomKey(8),
-            '{randomkey16}' => getRandomKey(16),
-        ];
+            '{randomkey8}' => str_random(8),
+            '{randomkey16}' => str_random(16),
+        ]);
 
         return trim(strtr($rule, $policy), '_');
-    }
-}
-
-if (!function_exists('getRandomKey')) {
-    /**
-     * 生成随机指定长度字符串.
-     * 
-     * @param  integer $length
-     * 
-     * @return string
-     */
-    function getRandomKey($length = 16)
-    {
-        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'; 
-        $randomString = ''; 
-        for ($i = 0; $i < $length; $i++) { 
-            $randomString .= $characters[mt_rand(0, strlen($characters) - 1)]; 
-        }
-        return $randomString;
     }
 }

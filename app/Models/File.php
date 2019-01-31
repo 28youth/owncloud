@@ -1,6 +1,6 @@
 <?php
 
-namespace XigeCloud;
+namespace XigeCloud\Models;
 
 class File extends BaseModel
 {

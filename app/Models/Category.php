@@ -19,8 +19,6 @@ class Category extends Model
     	'is_lock',
     	'operate',
     	'abilities',
-    	'dirrule',
-    	'namerule',
     	'filetype',
     	'description'
     ];
@@ -28,8 +26,6 @@ class Category extends Model
     protected $casts = [
         'operate' => 'array',
         'ability' => 'array',
-        'dirrule' => 'array',
-        'namerule' => 'array',
         'filetype' => 'array',
     ];
 
