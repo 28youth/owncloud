@@ -32,11 +32,17 @@ class FileUpload extends FormRequest
         $cate = Category::find($this->cate_id);
         $max = $cate->max_size ?? 0;
         $mimes = $cate->filetype ?? [];
-        
-        return [
+
+        $rules = [
             'cate_id' => 'required|exists:categories,id',
-            'file' => 'required|max:'.$max.'|file|mimes:'.implode(',', $mimes),
+            'file' => 'required|max:'.$max.'|file',
         ];
+        if (!empty($mimes)) {
+            $rules = array_merge($rules, [
+                'file' => 'required|max:'.$max.'|file|mimes:'.implode(',', $mimes),
+            ]);
+        }
+        return $rules;
     }
 
     /**
