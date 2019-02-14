@@ -103,7 +103,7 @@ if (!function_exists('makeFilePath')) {
             '{randomkey8}' => str_random(8),
             '{randomkey16}' => str_random(16),
         ]);
-        return trim(strtr($rule, $policy), '/');
+        return trim(strtr($rule, $policy), '/').'/';
     }
 }
 
