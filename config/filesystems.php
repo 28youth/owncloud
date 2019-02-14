@@ -47,6 +47,7 @@ return [
             'driver' => 'local',
             'root' => storage_path('app'),
             'url' => env('APP_URL').'/storage',
+            'path' => storage_path('files'),
         ],
 
         'sftp' => [
