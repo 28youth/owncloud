@@ -12,6 +12,7 @@
         "fideloper/proxy": "^4.0",
         "fisher/package-sso": "^1.0",
         "graham-campbell/flysystem": "^5.1",
+        "intervention/image": "^2.4",
         "laravel/framework": "5.7.*",
         "laravel/tinker": "^1.0",
         "league/flysystem-cached-adapter": "^1.0",
