@@ -95,13 +95,12 @@ if (!function_exists('makeFilePath')) {
     function makeFilePath($rule)
     {
         $policy = array_filter([
-            '{staff_sn}' => request()->user()->staff_sn ?? '',
-            '{shop_sn}' => request()->user()->shop_sn ?? '',
+            '{year}' => date('Y'),
+            '{month}' => date('m'),
+            '{day}' => date('d'),
             '{date}' => date('Ymd'),
-            '{timestamp}' => time(),
-            '{datetime}' => date('YmdHis'), 
-            '{randomkey8}' => str_random(8),
-            '{randomkey16}' => str_random(16),
+            '{staff_sn}' => request()->user()->staff_sn ?? '',
+            '{shop_sn}' => request()->user()->shop_sn ?? 'notshopsn',
         ]);
         return trim(strtr($rule, $policy), '/').'/';
     }
@@ -119,14 +118,14 @@ if (!function_exists('makeFileName')) {
     function makeFileName($rule, $origin = null)
     {
         $policy = array_filter([
-            '{staff_sn}' => request()->user()->staff_sn ?? '',
-            '{shop_sn}' => request()->user()->shop_sn ?? '',
-            '{originname}' => $origin,
+            '{year}' => date('Y'),
+            '{month}' => date('m'),
+            '{day}' => date('d'),
             '{date}' => date('Ymd'),
-            '{timestamp}' => time(),
-            '{datetime}' => date('YmdHis'), 
+            '{originname}' => $origin,
             '{randomkey8}' => str_random(8),
             '{randomkey16}' => str_random(16),
+            '{staff_sn}' => request()->user()->staff_sn ?? '',
         ]);
 
         return trim(strtr($rule, $policy), '_');
