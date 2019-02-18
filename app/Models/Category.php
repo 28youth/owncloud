@@ -37,7 +37,7 @@ class Category extends Model
     public static function boot()
     {
         parent::boot();
-
+        
         self::saving(function ($post) {
             $post->changeFullName();
         });
@@ -55,12 +55,11 @@ class Category extends Model
     
     public function setSymbolAttribute($value)
     {
-        if (empty($value)) {
-            $original = $this->getOriginal('name');
-            if ($original != $this->name) {
-                $pinyin = new Pinyin();
-                $this->attributes['symbol'] = strtoupper($pinyin->abbr($this->name));
-            }
+        $original = $this->getOriginal('name');
+
+        if (empty($value) || $original != $this->name) {
+            $pinyin = new Pinyin();
+            $this->attributes['symbol'] = strtoupper($pinyin->abbr($this->name));
         } else {
             $this->attributes['symbol'] = strtoupper($value);
         }

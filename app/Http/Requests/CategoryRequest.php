@@ -25,7 +25,7 @@ class CategoryRequest extends FormRequest
     {
         $rules = [
             'name' => ['required', unique_validator('categories', false), 'max:20'],
-            'symbol' => ['required', unique_validator('categories', false), 'max:10'],
+            'symbol' => ['nullable', unique_validator('categories', false), 'max:10'],
             'config_number.*' => 'distinct|in:cateNo,YY,mm,dd,YY-mm-dd,YY-mm',
             'config_operate.*' => 'distinct|in:create,approval,publish,change,destroy',
             'config_ability.*' => 'distinct|in:upload,download,move,rename,preview,delete,isShare,isUpdate',
@@ -43,7 +43,7 @@ class CategoryRequest extends FormRequest
                     unique_validator('categories'),
                 ],
                 'symbol' => [
-                    'required',
+                    'nullable',
                     'max: 10',
                     unique_validator('categories'),
                 ],

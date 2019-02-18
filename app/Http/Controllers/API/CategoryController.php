@@ -5,6 +5,7 @@ namespace XigeCloud\Http\Controllers\API;
 use Illuminate\Http\Request;
 use XigeCloud\Models\Category;
 use XigeCloud\Http\Requests\CategoryRequest;
+use XigeCloud\Http\Resources\CategoryResource;
 
 class CategoryController extends Controller
 {
@@ -13,11 +14,21 @@ class CategoryController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $list = Category::with('_parent', '_children')->get();
+        $list = Category::query()
+            // ->with(['_parent', '_children'])
+            ->filterByQueryString()
+            ->sortByQueryString()
+            ->withPagination();
 
-        return response()->json($list);
+        if ($request->has('page')) {
+
+            return array_merge($list, [
+                'data' => CategoryResource::collection($list['data'])
+            ]);
+        }
+        return CategoryResource::collection($list);
     }
 
     /**
@@ -29,6 +40,9 @@ class CategoryController extends Controller
     public function store(CategoryRequest $request, Category $category)
     {
         $category->fill($request->all());
+        $category->symbol = $request->symbol;
+        $category->is_lock = $request->is_lock;
+        $category->parent_id = $request->parent_id;
         $category->save();
 
         return response()->json($category);
@@ -55,9 +69,12 @@ class CategoryController extends Controller
     public function update(CategoryRequest $request, Category $category)
     {
         $category->fill($request->all());
+        $category->symbol = $request->symbol;
+        $category->is_lock = $request->is_lock;
+        $category->parent_id = $request->parent_id;
         $category->save();
 
-        return response()->json($category);
+        return CategoryResource::make($category);
     }
 
     /**

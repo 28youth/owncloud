@@ -46,7 +46,7 @@ Trait ListScopes
             $items = $query->paginate(request()->get('pagesize', $pagesize));
 
             return [
-                'data' => $items->items(),
+                'data' => collect($items->items()),
                 'total' => $items->total(),
                 'page' => $items->currentPage(),
                 'pagesize' => $items->perPage(),
