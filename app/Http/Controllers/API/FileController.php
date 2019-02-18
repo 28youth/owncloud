@@ -35,7 +35,14 @@ class FileController extends Controller
             ->filterByQueryString()
             ->sortByQueryString()
             ->withPagination();
-        
+
+        if ($request->has('page')) {
+
+            return array_merge($file, [
+                'data' => FileResource::collection($file['data'])
+            ]);
+        }
+
         return FileResource::collection($file);
     }
 
