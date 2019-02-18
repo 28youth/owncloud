@@ -51,12 +51,13 @@ class Handler
             $fileModel = new FileModel();
             $fileModel->setTable('files_'.$this->tabID);
             $fileModel->hash = $hash;
+            $fileModel->number = $this->makeFileNumber();
             $fileModel->size = $file->getClientSize();
             $fileModel->mime = $file->getClientMimeType();
             $fileModel->user_id = request()->user()->staff_sn;
             $fileModel->filename = ($filepath.$filename);
             $fileModel->category_id = $this->category->id;
-            $fileModel->origin_name = $file->getClientOriginalName();
+            $fileModel->origin_filename = $file->getClientOriginalName();
             $fileModel->saveOrFail();
 
             return $fileModel;
@@ -84,14 +85,16 @@ class Handler
             $response = $this->filesystem()->put($path, $file->get());
             switch (true) {
                 case request()->ok:
-                    return $this->makeFile($chunk->file_hash, function ($tmpfile, $hash) use ($file) {
+                    return $this->makeFile($chunk->file_hash, function ($tmpfile, $hash) {
                         // 生成文件存储位置并保存
+                        $originame = request()->fileName;
                         $filename = sprintf(
                             '%s%s',
                             makeFilePath($this->category->dirrule),
-                            makeFileName($this->category->namerule, $file->getClientOriginalName())
+                            makeFileName($this->category->namerule, $originame)
                         );
-                        $response = $this->filesystem()->copy($tmpfile, $filename);
+                        $filesystem = $this->filesystem();
+                        $response = $filesystem->copy($tmpfile, $filename);
                         if ($response === false) {
                             return $response->json(['message' => '上传失败'], 500);
                         }
@@ -99,12 +102,13 @@ class Handler
                         $fileModel = new FileModel();
                         $fileModel->setTable('files_'.$this->tabID);
                         $fileModel->hash = $hash;
-                        $fileModel->size = $file->getClientSize();
-                        $fileModel->mime = $file->getClientMimeType();
+                        $fileModel->number = $this->makeFileNumber();
+                        $fileModel->size = $filesystem->getSize($filename);
+                        $fileModel->mime = $filesystem->getMimetype($filename);
                         $fileModel->user_id = request()->user()->staff_sn;
                         $fileModel->filename = $filename;
                         $fileModel->category_id = $this->category->id;
-                        $fileModel->origin_name = $file->getClientOriginalName();
+                        $fileModel->origin_filename = $originame;
                         $fileModel->saveOrFail();
 
                         return $fileModel;
@@ -196,6 +200,11 @@ class Handler
             $this->tabID = $cur_cate_id;
         }
     }
+
+    public function getTable()
+    {
+        return $this->tabID;
+    }
     
     // 文件路径生成
     protected function makeDefaultPath($fileKey = 0): string
@@ -233,7 +242,8 @@ class Handler
             ->with('_parent')->first();
 
         return sprintf(
-            '%s%s%s',
+            '%s%s%s%s',
+            date('Ymd'),
             $cates->symbols,
             $cates->symbol,
             $this->getKey()
