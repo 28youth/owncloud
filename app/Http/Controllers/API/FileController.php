@@ -6,10 +6,11 @@ use Hashids;
 use Storage; 
 use XigeCloud\Files\Handler;
 use Illuminate\Http\Request;
-use XigeCloud\Files\FlysystemManager;
+use XigeCloud\Models\File as FileModel;
 use XigeCloud\Http\Requests\FileUpload;
 use XigeCloud\Http\Requests\ChunkUpload;
 use XigeCloud\Http\Requests\UploadRequest;
+use XigeCloud\Http\Resources\FileResource;
 
 class FileController extends Controller
 {
@@ -21,6 +22,21 @@ class FileController extends Controller
     {
         $this->cateID = $request->cate_id;
         $this->handler = new Handler($this->cateID);
+    }
+
+    public function index(Request $request)
+    {
+        $publisher = $request->query('publisher');
+
+        $file = FileModel::cate($this->handler->getTable())
+            ->when(!empty($publisher), function ($query) use ($publisher) {
+                return $query->byUser($publisher);
+            })
+            ->filterByQueryString()
+            ->sortByQueryString()
+            ->withPagination();
+        
+        return FileResource::collection($file);
     }
 
     public function store(FileUpload $request)
