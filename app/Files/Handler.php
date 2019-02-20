@@ -43,7 +43,7 @@ class Handler
         $fileModel = $this->validateFileInDb($file, function (UploadedFile $file, string $hash) {
 
             $filepath = makeFilePath($this->category->dirrule);
-            $filename = makeFileName($this->category->namerule, $file->getClientOriginalName());
+            $filename = makeFileName($this->category->numberrule, $file->getClientOriginalName());
             $response = $this->filesystem()->put(($filepath.$filename), $file->get());
             if ($response === false) {
                 return $response->json(['message' => '上传失败'], 500);
@@ -91,7 +91,7 @@ class Handler
                         $filename = sprintf(
                             '%s%s',
                             makeFilePath($this->category->dirrule),
-                            makeFileName($this->category->namerule, $originame)
+                            makeFileName($this->category->numberrule, $originame)
                         );
                         $filesystem = $this->filesystem();
                         $response = $filesystem->copy($tmpfile, $filename);
@@ -228,7 +228,7 @@ class Handler
             '%s_%s_%s',
             $this->getKey(),
             $this->category->id,
-            makeFileName($this->category->namerule, $originame)
+            makeFileName($this->category->numberrule, $originame)
         );
 
         return $filename;
