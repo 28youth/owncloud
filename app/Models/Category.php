@@ -20,8 +20,6 @@ class Category extends Model
         'policy_id',
         'max_size',
     	'is_lock',
-    	'operate',
-    	'abilities',
         'dirrule',
         'numberrule',
     	'filetype',
@@ -29,8 +27,6 @@ class Category extends Model
     ];
 
     protected $casts = [
-        'operate' => 'array',
-        'ability' => 'array',
         'filetype' => 'array',
     ];
 
