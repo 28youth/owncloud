@@ -25,7 +25,7 @@ class CreateCategoriesTable extends Migration
             $table->char('operate', 100)->default('')->comment('文件操作');
             $table->char('abilities', 100)->default('')->comment('操作权限');
             $table->char('dirrule', 100)->default('')->comment('目录规则');
-            $table->char('namerule', 100)->default('')->comment('文件名规则');
+            $table->char('numberrule', 100)->default('')->comment('编号规则');
             $table->char('filetype', 100)->default('')->comment('文件格式');
             $table->bigInteger('max_size')->default(0)->comment('单文件最大大小');
             $table->char('description', 100)->default('')->comment('分类备注');

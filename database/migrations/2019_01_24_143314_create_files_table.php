@@ -15,15 +15,14 @@ class CreateFilesTable extends Migration
     {
         Schema::create('files', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('user_id')->comment('上传者');
-            $table->string('hash')->comment('文件hash值');
-            $table->string('origin_name')->comment('原文件名');
-            $table->string('filename')->comment('文件名');
-            $table->string('mime')->comment('文件mime');
-            $table->string('size', 50)->comment('文件大小');
+            $table->mediumInteger('user_id')->comment('上传者');
+            $table->char('hash', 32)->comment('文件hash值');
+            $table->char('origin_filename', 100)->comment('原文件名');
+            $table->char('number', 50)->comment('文件编号');
+            $table->char('filename', 100)->comment('文件名');
+            $table->char('mime', 150)->comment('文件mime');
+            $table->char('size', 50)->comment('文件大小');
             $table->mediumInteger('category_id')->comment('所属分类');
-            $table->decimal('width', 8, 2)->nullable()->comment('图片宽');
-            $table->decimal('height', 8, 2)->nullable()->comment('图片高');
 
             $table->timestamps();
         });
