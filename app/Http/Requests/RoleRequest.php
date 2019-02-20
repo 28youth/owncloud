@@ -26,8 +26,8 @@ class RoleRequest extends FormRequest
         $rules = [
             'name' => 'required|unique:roles,name,NULL,name,deleted_at,NULL|max:20',
             'staff' => 'array',
-            'abilities' => 'array',
-            'abilities.*' => 'exists:abilities,id',
+            // 'abilities' => 'array',
+            // 'abilities.*' => 'exists:abilities,id',
             'categories' => 'array',
             'categories.*' => 'exists:categories,id',
         ];

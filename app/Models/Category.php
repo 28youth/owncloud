@@ -23,7 +23,7 @@ class Category extends Model
     	'operate',
     	'abilities',
         'dirrule',
-        'namerule',
+        'numberrule',
     	'filetype',
     	'description'
     ];
@@ -55,13 +55,16 @@ class Category extends Model
     
     public function setSymbolAttribute($value)
     {
+        $symbol = $this->getOriginal('symbol');
         $original = $this->getOriginal('name');
 
-        if (empty($value) || $original != $this->name) {
+        if (!empty($value) && $symbol != $value) {
+            $this->attributes['symbol'] = strtoupper($value);
+
+        } elseif (empty($value) || $original != $this->name) {
+
             $pinyin = new Pinyin();
             $this->attributes['symbol'] = strtoupper($pinyin->abbr($this->name));
-        } else {
-            $this->attributes['symbol'] = strtoupper($value);
         }
     }
 
