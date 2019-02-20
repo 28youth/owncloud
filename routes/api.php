@@ -32,10 +32,10 @@ Route::group(['middleware' => 'auth:api'], function (RouteContract $api) {
 	$api->apiResource('files', API\FileController::class);
 
 	// 获取分类列表
-	$api->apiResource('file/categories', API\CategoryController::class);
+	$api->apiResource('categories', API\CategoryController::class);
 
 	// 获取权限列表
-	$api->apiResource('file/abilities', API\AbilityController::class);
+	$api->apiResource('abilities', API\AbilityController::class);
 
 	// 获取角色列表
 	$api->apiResource('roles', API\RoleController::class);
