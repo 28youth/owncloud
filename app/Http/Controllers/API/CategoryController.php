@@ -4,6 +4,8 @@ namespace XigeCloud\Http\Controllers\API;
 
 use Illuminate\Http\Request;
 use XigeCloud\Models\Category;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
 use XigeCloud\Http\Requests\CategoryRequest;
 use XigeCloud\Http\Resources\CategoryResource;
 
@@ -43,9 +45,17 @@ class CategoryController extends Controller
         $category->symbol = $request->symbol;
         $category->is_lock = $request->is_lock;
         $category->parent_id = $request->parent_id;
-        $category->save();
 
-        return response()->json($category);
+        return $category->getConnection()->transaction(function() use ($category) {
+            $category->save();
+
+            // 一级分类创建对应的表
+            if (! $category->parent_id) {
+                $this->makeFileTable($category->id);
+            }
+
+            return CategoryResource::make($category);
+        });
     }
 
     /**
@@ -88,5 +98,28 @@ class CategoryController extends Controller
         $category->delete();
 
         return response()->json(null, 204);
+    }
+
+    protected function makeFileTable(int $id)
+    {
+        $table = 'files_'.$id;
+
+        if (Schema::hasTable($table)) {
+
+            Schema::dropIfExists($table);
+        }
+        Schema::create($table, function (Blueprint $table) {
+            $table->increments('id');
+            $table->mediumInteger('user_id')->comment('上传者');
+            $table->char('hash', 32)->comment('文件hash值');
+            $table->char('origin_filename', 100)->comment('原文件名');
+            $table->char('number', 50)->comment('文件编号');
+            $table->char('filename', 100)->comment('文件名');
+            $table->char('mime', 150)->comment('文件mime');
+            $table->char('size', 50)->comment('文件大小');
+            $table->mediumInteger('category_id')->comment('所属分类');
+
+            $table->timestamps();
+        });
     }
 }
