@@ -43,13 +43,10 @@ class RoleController extends Controller
     public function store(RoleRequest $request, Role $role)
     {
         $data = $request->all();
-        $role->name = $data['name'];
+        $role->fill($data);
 
         return $role->getConnection()->transaction(function () use ($role, $data) {
             $role->save();
-            if (!empty($data['abilities'])) {
-                $role->abilities()->attach($data['abilities']);
-            }
             if (!empty($data['categories'])) {
                 $role->categories()->attach($data['categories']);
             }
@@ -64,7 +61,7 @@ class RoleController extends Controller
                 \DB::table('staff_has_roles')->insert($list);
             }
             
-            $role->load(['abilities', 'categories', 'staff']);
+            $role->load(['categories', 'staff']);
 
             return response()->json(RoleResource::make($role), 201);
         });
@@ -78,7 +75,7 @@ class RoleController extends Controller
      */
     public function show(Role $role)
     {
-        $role->load(['abilities', 'categories', 'staff']);
+        $role->load(['categories', 'staff']);
 
         return RoleResource::make($role);
     }
@@ -93,13 +90,10 @@ class RoleController extends Controller
     public function update(RoleRequest $request, Role $role)
     {
         $data = $request->all();
-        $role->name = $data['name'];
+        $role->fill($data);
 
         return $role->getConnection()->transaction(function () use ($role, $data) {
             $role->save();
-            if (!empty($data['abilities'])) {
-                $role->abilities()->sync($data['abilities']);
-            }
             if (!empty($data['categories'])) {
                 $role->categories()->sync($data['categories']);
             }
@@ -115,7 +109,7 @@ class RoleController extends Controller
                 \DB::table('staff_has_roles')->insert($list);
             }
 
-            $role->load(['abilities', 'categories', 'staff']);
+            $role->load(['categories', 'staff']);
 
             return response()->json(RoleResource::make($role), 201);
         });
