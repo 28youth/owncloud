@@ -19,7 +19,6 @@ class RoleResource extends JsonResource
             'name' => $this->name,
             'staff' => $this->getStaff($this->staff),
             'categories' => $this->categories,
-            'abilities' => $this->abilities,
         ];
     }
 

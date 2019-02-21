@@ -14,9 +14,22 @@ class RoleController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $list = Role::with('abilities', 'categories', 'staff')->get();
+        $list = Role::query()
+            ->with(['staff', 'categories' => function ($query) {
+                return $query->select('id', 'name');
+            }])
+            ->filterByQueryString()
+            ->sortByQueryString()
+            ->withPagination();
+
+        if ($request->has('page')) {
+
+            return array_merge($list, [
+                'data' => RoleResource::collection($list['data'])
+            ]);
+        }
 
         return RoleResource::collection($list);
     }
