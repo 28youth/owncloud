@@ -95,7 +95,8 @@ class RoleController extends Controller
         return $role->getConnection()->transaction(function () use ($role, $data) {
             $role->save();
             if (!empty($data['categories'])) {
-                $role->categories()->sync($data['categories']);
+                $role->categories()->detach();
+                $role->categories()->attach($data['categories']);
             }
             if (!empty($data['staff'])) {
                 $list = array_map(function ($v) use ($role) {
