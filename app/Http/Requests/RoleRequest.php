@@ -25,9 +25,15 @@ class RoleRequest extends FormRequest
     {
         $rules = [
             'name' => 'required|unique:roles,name,NULL,name,deleted_at,NULL|max:20',
-            'staff' => 'array',
-            'categories' => 'array',
-            'categories.*' => 'exists:categories,id',
+            'staff' => 'required|array',
+            'categories' => 'required|array',
+            'categories.*.category_id' => 'required_with:categories|exists:categories,id',
+            'categories.*.file_upload' => 'required_with:categories|boolean',
+            'categories.*.file_download' => 'required_with:categories|boolean',
+            'categories.*.file_edit' => 'required_with:categories|boolean',
+            'categories.*.file_delete' => 'required_with:categories|boolean',
+            'categories.*.file_expired' => 'required_with:categories|boolean',
+            'categories.*.file_edit_tag' => 'required_with:categories|boolean',
         ];
         if (strtolower($this->getMethod()) === 'patch') {
             $rules = array_merge($rules, [
@@ -40,6 +46,37 @@ class RoleRequest extends FormRequest
 
         return $rules;
     }
+
+    /*public function testData()
+    {
+        [
+            'name' => '管理员',
+            'staff' => [
+                '121833',
+                '110105',
+            ],
+            'categories' => [
+                [
+                    'category_id' => 1,
+                    'file_upload' => 1,
+                    'file_download' => 1,
+                    'file_edit' => 1,
+                    'file_delete' => 1,
+                    'file_expired' => 1,
+                    'file_edit_tag' => 1,
+                ],
+                [
+                    'category_id' => 2,
+                    'file_upload' => 1,
+                    'file_download' => 1,
+                    'file_edit' => 1,
+                    'file_delete' => 1,
+                    'file_expired' => 1,
+                    'file_edit_tag' => 1,
+                ]
+            ]
+        ];
+    }*/
 
     /**
      * Get custom attributes for validator errors.

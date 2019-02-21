@@ -15,7 +15,15 @@ class Role extends Model
 
     public function categories()
     {
-        return $this->belongsToMany(Category::class, 'role_has_categories', 'role_id', 'category_id');
+        return $this->belongsToMany(Category::class, 'role_has_categories', 'role_id', 'category_id')
+            ->withPivot([
+                'file_edit',
+                'file_delete',
+                'file_upload',
+                'file_expired',
+                'file_download',
+                'file_edit_tag'
+            ]);
     }
 
     public function staff()

@@ -18,11 +18,24 @@ class RoleResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'staff' => $this->getStaff($this->staff),
-            'categories' => $this->categories,
+            'categories' => $this->format($this->categories),
         ];
     }
 
-    public function getStaff($staff): array
+    protected function format($categories)
+    {
+        $cates = [];
+        if ($categories->isNotEmpty()) {
+            return $categories->map(function ($item) {
+                return array_merge([
+                    'name' => $item->name
+                ], $item->pivot->toArray());
+            });
+        }
+        return $cates;
+    }
+
+    protected function getStaff($staff): array
     {
         $list = [];
         if ($staff->isNotEmpty()) {
