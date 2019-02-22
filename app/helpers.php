@@ -110,24 +110,26 @@ if (!function_exists('makeFileName')) {
     /**
      * 生成文件名.
      * 
-     * @param  string $rule
-     * @param  string $origin
+     * @param  string $rule     生成规则
+     * @param  string $symbol   分类编号
+     * @param  string $origin   原文名称
      * 
      * @return string
      */
-    function makeFileName($rule, $origin = null)
+    function makeFileName($rule, $symbol = null, $origin = null)
     {
         $policy = array_filter([
             '{year}' => date('Y'),
             '{month}' => date('m'),
             '{day}' => date('d'),
             '{date}' => date('Ymd'),
+            '{category}' => $symbol,
             '{originname}' => $origin,
             '{randomkey8}' => str_random(8),
             '{randomkey16}' => str_random(16),
             '{staff_sn}' => request()->user()->staff_sn ?? '',
         ]);
 
-        return trim(strtr($rule, $policy), '_');
+        return strtr($rule, $policy);
     }
 }
