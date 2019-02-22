@@ -53,10 +53,25 @@ class FileController extends Controller
         return (new Handler($cateID))->storage($request, $file);
     }
 
-    // 上传前验证
-    public function ckfile(UploadRequest $request)
+    /**
+     * 快速上传查询：
+     *     1、查询文件是否上传
+     *     2、文件合法性验证
+     * @param  \XigeCloud\Http\Requests\UploadRequest $request
+     * 
+     * @return mixed
+     */
+    public function rapidUpload(UploadRequest $request)
     {
-        return response()->json(['isUpload' => 'ok'], 200);
+        $file = FileModel::where('md5', $request->md5)->first();
+        if ($file->isNotEmpty()) {
+
+            return response()->json([
+                'status' => 0,
+                'info' => $file,
+            ], 200);
+        }
+        return response()->json(['status' => 404]);
     }
 
     public function chunk(Request $request)

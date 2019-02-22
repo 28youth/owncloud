@@ -35,6 +35,7 @@ class UploadRequest extends FormRequest
         $mimes = $cate->filetype ?? [];
 
         $rules = [
+            'md5' => 'required|max:32',
             'cate_id' => 'required|exists:categories,id',
             'fileSize' => 'required|max:'.$max,
         ];
@@ -57,6 +58,7 @@ class UploadRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'md5.required' => '文件md5不能为空',
             'cate_id.required' => '文件分类不能为空',
             'cate_id.exists' => '文件分类不存在',
             'fileSize.required' => '文件大小不能为空',
