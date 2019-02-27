@@ -23,7 +23,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::group(['middleware' => 'auth:api'], function (RouteContract $api) {
 
 	// 文件分块上传前查询
-	$api->get('file/chunk', API\FileController::class.'@ckfile');
+	$api->get('file/chunk', API\FileController::class.'@rapidUpload');
 
 	// 文件分块上传
 	$api->post('file/chunk', API\FileController::class.'@chunk');

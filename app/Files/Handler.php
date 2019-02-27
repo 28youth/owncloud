@@ -3,25 +3,27 @@
 namespace XigeCloud\Files;
 
 use Cache;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use XigeCloud\Models\Category;
 use League\Flysystem\Filesystem;
 use Illuminate\Http\UploadedFile;
+use XigeCloud\Services\RedisLock;
 use XigeCloud\Files\Plugin\MergeFile;
 use XigeCloud\Files\FlysystemManager;
 use XigeCloud\Models\File as FileModel;
 use XigeCloud\Models\Chunk as ChunkModel;
-
+use XigeCloud\Files\Traits\BashHandle;
 
 class Handler
 {   
+    use BashHandle;
+
     protected $tabID;
 
     protected $connect;
 
     protected $category;
-
-
 
     public function __construct(int $cate_id)
     {
@@ -29,7 +31,7 @@ class Handler
         $this->connect = $this->cacheConnectName();
         $this->setTabId($cate_id);
     }
-    
+
     /**
      * 单文件存储.
      * 
@@ -40,6 +42,7 @@ class Handler
      */
     public function storage(Request $request, UploadedFile $file)
     {
+        return $this->getKey();
         $fileModel = $this->validateFileInDb($file, function (UploadedFile $file, string $hash) {
 
             $filepath = makeFilePath($this->category->dirrule);
@@ -77,72 +80,98 @@ class Handler
         });
     }
 
-    public function setChunk($chunkId, $chunkSum, $file)
+    public function setChunk(UploadedFile $file)
     {
-        return $this->saveChunk($chunkId, $chunkSum, function ($chunk) use ($file){
+        $chunkmd5 = md5_file($file->getRealPath());
 
-            $path = '/chunks/'.$chunk->chunk_name.'.chunk';
-            $response = $this->filesystem()->put($path, $file->get());
-            switch (true) {
-                case request()->ok:
-                    return $this->makeFile($chunk->file_hash, function ($tmpfile, $hash) {
-                        // 生成文件存储位置并保存
-                        $originame = request()->fileName;
-                        $filename = sprintf(
-                            '%s%s',
-                            makeFilePath($this->category->dirrule),
-                            makeFileName($this->category->numberrule, $originame)
-                        );
-                        $filesystem = $this->filesystem();
-                        $response = $filesystem->copy($tmpfile, $filename);
-                        if ($response === false) {
-                            return $response->json(['message' => '上传失败'], 500);
-                        }
+        $chunkpath = sprintf('/chunks/%s.chunk', $chunkmd5);
 
-                        $fileModel = new FileModel();
-                        $fileModel->setTable('files_'.$this->tabID);
-                        $fileModel->hash = $hash;
-                        $fileModel->number = $this->makeFileNumber();
-                        $fileModel->size = $filesystem->getSize($filename);
-                        $fileModel->mime = $filesystem->getMimetype($filename);
-                        $fileModel->user_id = request()->user()->staff_sn;
-                        $fileModel->filename = $filename;
-                        $fileModel->category_id = $this->category->id;
-                        $fileModel->origin_filename = $originame;
-                        $fileModel->saveOrFail();
+        $response = $this->filesystem()->put($chunkpath, $file->get());
 
-                        return $fileModel;
-                    });
-                    break;
+        if ($response !== true) {
+            abort(500, '上传失败，请重试！');
+        }
 
-                case $response !== true:
-                    abort(500, '上传失败');
-                    break;
-                    
-                default:
-                    return 1;
-                    break;
+        return response()->json([
+            'md5' => request()->header('Content-MD5')
+        ]);
+    }
+
+    /**
+     * 检查分片是否上传(返回未上传的分片索引).
+     * 
+     * @param  array  $block_list
+     * @return array
+     */
+    public function checkChunks(array $block_list)
+    {
+        $uploaded = [];
+        $filesystem = $this->filesystem();
+        collect($block_list)->map(function ($md5key, $key) use (&$uploaded, $filesystem)
+        {
+            $chunkpath = sprintf('/chunks/%s.chunk', $md5key);
+            if (! $filesystem->has($chunkpath)) {
+
+                array_push($uploaded, $key);
             }
         });
 
+        // 全部分片都存在 ？impossible
+        if (empty($uploaded)) {
+            # code...
+        }
+        
+        return $uploaded;
     }
 
-    protected function saveChunk($chunkId, $chunkSum, callable $call)
+    /**
+     * 完成上传组织分片生成文件.
+     * 
+     * @param  array $block_list
+     * @return mixed
+     */
+    public function createFile($block_list)
     {
-        $chunkModel = new ChunkModel();
-        $chunkModel->up_time = now();
-        $chunkModel->cate_id = $this->category->id;
-        $chunkModel->user_id = request()->user()->staff_sn;
-        $chunkModel->chunk_id = $chunkId;
-        $chunkModel->chunk_sum = $chunkSum;
-        $chunkModel->chunk_key = str_random();
-        $chunkModel->chunk_name = str_random(8);
-        $chunkModel->file_hash = request()->hash;
-        $chunkModel->saveOrFail();
+        $savename = Str::random();
+        $filesystem = $this->filesystem();
+        $driver = $this->getConfig()['driver'];
+        if ($driver === 'local') {
+            $savepath = storage_path('chunks');
+        } else {
+            $savepath = $filesystem->getAdapter()->getRoot().'chunks';
+        }
+        return $this->execMerge($savepath, $savename, $block_list, function ($cb, $filename) use (
+            $filesystem
+        ) {
+            if (! empty($cb)) abort(500, $cb);
 
-        return call_user_func_array($call, [$chunkModel]);
+            // 移动临时文件到存储位置
+            $info = $this->makeFileInfo();
+            $originame = request()->filename;
+            $tmpfile = sprintf('/chunks/%s', $filename);
+            $savepath = sprintf('%s%s%s', $info['path'], $info['number'], $originame);
+            $response = $filesystem->copy($tmpfile, $savepath);
+            if ($response === false) {
+                return $response->json(['message' => '上传失败'], 500);
+            }
+            
+            $fileModel = new FileModel();
+            $fileModel->setTable('files_'.$this->tabID);
+            $fileModel->hash = request()->filehash;
+            $fileModel->number = $info['number'];
+            $fileModel->size = $filesystem->getSize($savepath);
+            $fileModel->mime = $filesystem->getMimetype($savepath);
+            $fileModel->user_id = request()->user()->staff_sn;
+            $fileModel->filename = $savepath;
+            $fileModel->category_id = $this->category->id;
+            $fileModel->origin_filename = $originame;
+            $fileModel->saveOrFail();
+
+            return $fileModel;
+        });
     }
 
+    // 老版本合并分片（弃用）
     protected function makeFile(string $hash, callable $call)
     {
         $filesystem = $this->filesystem();
@@ -151,7 +180,7 @@ class Handler
             ->get();
 
         // 生成空文件
-        $fileName = '/chunks/'.str_random(8);
+        $fileName = '/chunks/'.Str::random(8);
         $fileObj = $filesystem->put($fileName, null);
 
         // 组装文件块
@@ -182,7 +211,13 @@ class Handler
         return call_user_func_array($call, [$fileName, $hash]);
     }
 
-    // 根据分类设置文件存储表（当前分类的第一级分类）
+    /**
+     * 根据分类设置文件存储表（查找顶级分类）
+     * 
+     * @param int $cur_cate_id 分类ID
+     *
+     * @return void
+     */
     protected function setTabId(int $cur_cate_id)
     {
         if ($this->category->parent_id === 0) {
@@ -201,53 +236,26 @@ class Handler
         }
     }
 
-    public function getTable()
-    {
-        return $this->tabID;
-    }
-    
-    // 文件路径生成
-    protected function makeDefaultPath($fileKey = 0): string
-    {
-        $filePath = $fileKey ?: $this->getKey();
-        $filePath = (strlen($filePath) < 11) ? str_pad($filePath, 11, '0', STR_PAD_LEFT) : $filePath;
-        return sprintf(
-            '%s/%s/%s/%s',
-            substr($filePath, 0, 3),
-            substr($filePath, 3, 3),
-            substr($filePath, 6, 3),
-            substr($filePath, 9)
-        );
-    }
-
-    // 文件名生成
-    protected function makeFileName(UploadedFile $file)
-    {
-        $originame = $file->getClientOriginalName();
-        $filename = sprintf(
-            '%s_%s_%s',
-            $this->getKey(),
-            $this->category->id,
-            makeFileName($this->category->numberrule, $originame)
-        );
-
-        return $filename;
-    }
-
-    // 文件编号生成
-    protected function makeFileNumber()
-    {
+    /**
+     * 文件编号生成.
+     * 
+     * @return string
+     */
+    protected function makeFileInfo()
+    {   
+        // 获取文件分类编号
         $cates = Category::where('id', $this->category->id)
             ->select('parent_id','symbol')
             ->with('_parent')->first();
 
-        return sprintf(
-            '%s%s%s%s',
-            date('Ymd'),
-            $cates->symbols,
-            $cates->symbol,
-            $this->getKey()
-        );
+        $symbol = $cates->symbols.$cates->symbol;
+
+        $number = makeFileName($this->category->numberrule, $symbol);
+
+        return [
+            'number' => sprintf('%s%s', $number, $this->getKey()),
+            'path' => makeFileName($this->category->dirrule, $symbol),
+        ];
     }
 
     /**
@@ -255,11 +263,19 @@ class Handler
      * 
      * @return int
      */
-    protected function getKey(): int
+    protected function getKey()
     {
-        $key = FileModel::cate($this->tabID)->orderBy('id', 'desc')->value('id');
+        $staffSn = request()->user()->staff_sn;
+        $isLock = RedisLock::tryGetLock('file_lock', $staffSn, 5000);
+        if ($isLock === true) {
+            $key = FileModel::cate($this->tabID)->orderBy('id', 'desc')->value('id');
 
-        return empty($key) ? 1 : (int)$key + 1;
+            return empty($key) ? 1 : (int)$key + 1;
+
+        } else {
+
+            return response()->json(['message' => '上传文件排队中'], 403);
+        }
     }
 
     /**
@@ -279,13 +295,21 @@ class Handler
      */
     protected function cacheConnectName(): string
     {
-        $cacheKey = "policyName_{$this->category->id}";
+        $cacheKey = sprintf('policyName_%s', $this->category->id);
 
-        if (!Cache::has($cacheKey)) {
+        if (! Cache::has($cacheKey)) {
             $name = $this->category->policy['name'] ?? '';
-
             Cache::forever($cacheKey, $name);
         }
+
         return Cache::get($cacheKey);
+    }
+
+    /**
+     * 获取当前分类操作表ID
+     */
+    public function getTableID()
+    {
+        return $this->tabID;
     }
 }

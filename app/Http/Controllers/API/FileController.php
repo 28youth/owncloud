@@ -28,7 +28,7 @@ class FileController extends Controller
     {
         $publisher = $request->query('publisher');
 
-        $file = FileModel::cate($this->handler->getTable())
+        $file = FileModel::cate($this->handler->getTableID())
             ->when(!empty($publisher), function ($query) use ($publisher) {
                 return $query->byUser($publisher);
             })
@@ -45,7 +45,7 @@ class FileController extends Controller
 
         return FileResource::collection($file);
     }
-
+    
     public function store(FileUpload $request)
     {
         $file = $request->file('file');
@@ -63,7 +63,10 @@ class FileController extends Controller
      */
     public function rapidUpload(UploadRequest $request)
     {
-        $file = FileModel::where('md5', $request->md5)->first();
+        $file = FileModel::cate($this->handler->getTableID())
+            ->where('md5', $request->md5)
+            ->first();
+        
         if ($file->isNotEmpty()) {
 
             return response()->json([
@@ -74,12 +77,11 @@ class FileController extends Controller
         return response()->json(['status' => 404]);
     }
 
+    // 上传分片
     public function chunk(Request $request)
     {
-        $chunk = $request->file('chunk');
-        $chunkID = $request->input('chunk_id');
-        $chunkSum = $request->input('chunk_sum');
+        $chunk = $request->file('file');
 
-        return $this->handler->setChunk($chunkID, $chunkSum, $chunk);
+        return $this->handler->setChunk($chunk);
     }
 }
