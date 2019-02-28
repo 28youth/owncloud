@@ -43,6 +43,10 @@ Route::group(['middleware' => 'auth:api'], function (RouteContract $api) {
 	// 服务器配置
 	$api->apiResource('policies', API\PolicyController::class);
 
+	// 标签管理
+	$api->apiResource('tags', API\TagController::class);
+	
 	// 获取标签分类列表
-	$api->apiResource('tag/categories', API\TagCateController::class);
+	$api->apiResource('tags/categories', API\TagCateController::class);
+
 });

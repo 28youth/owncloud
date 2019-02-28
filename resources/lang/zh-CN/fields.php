@@ -16,7 +16,6 @@ return [
 		'is_expired' => '是否包含过期文件',
 		'description' => '分类备注',
 	],
-
 	// 权限
 	'ability' => [
 		'name' => '权限名',
@@ -24,7 +23,6 @@ return [
 		'is_lock' => '是否锁定',
 		'sort' => '排序值',
 	],
-
 	// 角色
 	'role' => [
 		'name' => '角色名',
@@ -35,11 +33,15 @@ return [
 		'staff' => '员工'
 	],
 	'tag_categories' => [
-		'name' => '名称',
-		'color' => '验证',
+		'name' => '分类名称',
+		'color' => '分类颜色',
 		'rank' => '排序值',
 	],
-
+	'tags' => [
+		'name' => '标签名称',
+		'tag_category_id' => '标签分类',
+		'description' => '标签说明',
+	],
 	'policies' => [
 		'name' => '配置名称',
     	'driver' => '存储驱动',

@@ -11,6 +11,8 @@ class Tag extends Model
     
     protected $hidden = ['created_at', 'updated_at'];
 
+    protected $fillable = ['name', 'tag_category_id', 'description'];
+
     /**
      * Has the category of tag.
      * 
