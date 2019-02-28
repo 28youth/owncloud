@@ -39,4 +39,15 @@ return [
 		'color' => '验证',
 		'rank' => '排序值',
 	],
+
+	'policies' => [
+		'name' => '配置名称',
+    	'driver' => '存储驱动',
+    	'host' => '服务器IP',
+    	'port' => '服务器端口',
+    	'username' => '服务器用户名',
+    	'root' => '服务器用户名',
+    	'privatekey' => '服务器密钥',
+    	'timeout' => '超时时间（秒）',
+	],
 ];

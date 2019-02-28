@@ -31,14 +31,17 @@ Route::group(['middleware' => 'auth:api'], function (RouteContract $api) {
 	// 文件操作
 	$api->apiResource('files', API\FileController::class);
 
-	// 获取分类列表
+	// 文件分类
 	$api->apiResource('categories', API\CategoryController::class);
 
-	// 获取权限列表
+	// 文件权限
 	$api->apiResource('abilities', API\AbilityController::class);
 
-	// 获取角色列表
+	// 角色管理
 	$api->apiResource('roles', API\RoleController::class);
+
+	// 服务器配置
+	$api->apiResource('policies', API\PolicyController::class);
 
 	// 获取标签分类列表
 	$api->apiResource('tag/categories', API\TagCateController::class);
