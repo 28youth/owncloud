@@ -60,7 +60,7 @@ class Handler
             $fileModel->user_id = request()->user()->staff_sn;
             $fileModel->filename = ($filepath.$filename);
             $fileModel->category_id = $this->category->id;
-            $fileModel->origin_filename = $file->getClientOriginalName();
+            $fileModel->origin_name = $file->getClientOriginalName();
             $fileModel->saveOrFail();
 
             return $fileModel;
@@ -164,7 +164,7 @@ class Handler
             $fileModel->user_id = request()->user()->staff_sn;
             $fileModel->filename = $savepath;
             $fileModel->category_id = $this->category->id;
-            $fileModel->origin_filename = $originame;
+            $fileModel->origin_name = $originame;
             $fileModel->saveOrFail();
 
             return $fileModel;
