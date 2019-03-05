@@ -1,6 +1,6 @@
 <?php
 
-namespace XigeCloud\Http\Controllers;
+namespace XigeCloud\Http\Controllers\API;
 
 use Illuminate\Http\Request;
 use XigeCloud\Models\Tag as TagModel;
