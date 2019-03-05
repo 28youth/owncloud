@@ -42,25 +42,28 @@ class Handler
      */
     public function storage(Request $request, UploadedFile $file)
     {
-        return $this->getKey();
+        $res = $this->unzip('/data/chunks', 'chunks.tar.bz2');
+        return response()->json($res);
         $fileModel = $this->validateFileInDb($file, function (UploadedFile $file, string $hash) {
 
-            $filepath = makeFilePath($this->category->dirrule);
-            $filename = makeFileName($this->category->numberrule, $file->getClientOriginalName());
-            $response = $this->filesystem()->put(($filepath.$filename), $file->get());
+            $info = $this->makeFileInfo();
+            $originame = $file->getClientOriginalName();
+            $savepath = sprintf('%s%s%s', $info['path'], $info['number'], $originame);
+
+            $response = $this->filesystem()->put($savepath, $file->get());
             if ($response === false) {
-                return $response->json(['message' => '上传失败'], 500);
+                return $response->json(['message' => '上传失败,请重试'], 500);
             }
             $fileModel = new FileModel();
             $fileModel->setTable('files_'.$this->tabID);
             $fileModel->hash = $hash;
-            $fileModel->number = $this->makeFileNumber();
+            $fileModel->number = $info['number'];
             $fileModel->size = $file->getClientSize();
             $fileModel->mime = $file->getClientMimeType();
             $fileModel->user_id = request()->user()->staff_sn;
-            $fileModel->filename = ($filepath.$filename);
+            $fileModel->filename = $savepath;
             $fileModel->category_id = $this->category->id;
-            $fileModel->origin_name = $file->getClientOriginalName();
+            $fileModel->origin_name = $originame;
             $fileModel->saveOrFail();
 
             return $fileModel;
@@ -253,7 +256,7 @@ class Handler
         $number = makeFileName($this->category->numberrule, $symbol);
 
         return [
-            'number' => sprintf('%s%s', $number, $this->getKey()),
+            'number' => sprintf('%s%s', $number, $this->getKey($number)),
             'path' => makeFileName($this->category->dirrule, $symbol),
         ];
     }
@@ -263,18 +266,25 @@ class Handler
      * 
      * @return int
      */
-    protected function getKey()
+    protected function getKey($key)
     {
         $staffSn = request()->user()->staff_sn;
         $isLock = RedisLock::tryGetLock('file_lock', $staffSn, 5000);
         if ($isLock === true) {
-            $key = FileModel::cate($this->tabID)->orderBy('id', 'desc')->value('id');
+            $orderKey = Cache::remember($key, now()->addMonth(), function () use ($key) {
+                $number = FileModel::cate($this->tabID)->where('number', 'like', "%{$key}%")
+                    ->where('category_id', $this->category->id)
+                    ->latest()
+                    ->value('number');
+                if (empty($number)) return 1;
+                return str_replace($key, '', $number) + 1;
+            });
+            Cache::increment($key);
+            RedisLock::releaseLock('file_lock', $staffSn);
 
-            return empty($key) ? 1 : (int)$key + 1;
-
+            return str_pad($orderKey, 5, 0, STR_PAD_LEFT);
         } else {
-
-            return response()->json(['message' => '上传文件排队中'], 403);
+            return response()->json(['message' => '上传文件排队中'], 408);
         }
     }
 

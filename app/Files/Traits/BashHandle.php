@@ -67,22 +67,17 @@ trait BashHandle
 
         $bash = <<<EOF
             if [ ! -d $savepath ]; then
-                echo "文件路径不存在"
-                exit
+                echo "error 文件路径不存在" && exit
             fi
             cd $savepath
-
             if [ -f $savename ];then
-                echo "合并的文件已存在"
-                exit
+                echo "error 合并的文件已存在" && exit
             fi
-
             block=($ids)
             for chunk in \${block[@]}
             do
                 if [ ! -f "\$chunk" ];then
-                    echo "\$chunk 文件块不存在"
-                    exit
+                    echo "error \$chunk 文件块不存在" && exit
                 fi
             done
 
@@ -103,15 +98,14 @@ EOF;
     {
         $bash = <<<EOF
             if [ ! -f $file ];then
-                echo "$file 文件不存在"
-                exit
+                echo "error $file 文件不存在" && exit
             fi
             md5sum $file
 EOF;
         $response = $this->exec($bash);
         preg_match('/(?<md5>[a-fA-F0-9]{32,32})/', $response, $match);
 
-        return (strlen($match ? $match['md5'] : '') == 32) ? $match['md5'] : $response;
+        return !empty($match['md5']) ? $match['md5'] : $response;
     }
 
     /**
@@ -131,13 +125,10 @@ EOF;
 
         $bash = <<<EOF
             if [ -f $save_path ];then
-                echo "移动的文件已存在"
-                exit
+                echo "error 移动的文件已存在" && exit
             fi
-
             if [ ! -f $origin_path ];then
-                echo "待移动文件不存在"
-                exit
+                echo "error 待移动文件不存在" && exit
             fi
 
             mv $origin_path $save_path
@@ -145,7 +136,47 @@ EOF;
         return $this->exec($bash);
     }
 
-    public function deleteChunks($value='')
+    public function unzip($savepath, $filename)
+    {
+        $bash = <<<EOF
+            if [ ! -d $savepath ]; then
+                echo "error 文件路径不存在" && exit
+            fi
+            cd $savepath
+            if [ ! -f $filename ];then
+                echo "error 压缩包文件不存在" && exit
+            fi
+            filename=\$(basename "$filename")
+            extension="\${filename##*.}"
+            filename="\${filename%.*}"
+            if [ \$extension = "zip" ];then
+                mkdir \$filename && unzip -o $filename -d \$filename
+            elif [ \$extension = 'tar' ];then
+                mkdir \$filename && tar -xvf $filename -C \$filename
+            elif [ \$extension = 'gz' ];then
+                mkdir \$filename && tar -zxvf $filename -C \$filename
+            elif [ \$extension = 'bz2' ];then
+                mkdir \$filename && tar -jxvf $filename -C \$filename
+            else
+                echo "error 不支持的压缩包类型" && exit
+            fi
+            #files=\$(ls \$filename)
+            #echo \$files
+EOF;
+            return $this->response($this->exec($bash));
+    }
+
+    protected function response($result)
+    {
+        preg_match('/(?<mark>error|errors|command)/', $result, $match);
+        if (! empty($match['mark'])) {
+            abort(500, $result);
+        }
+
+        return preg_split('/[;\r\n]+/s', $result, PREG_SPLIT_NO_EMPTY);
+    }
+
+    public function deleteChunks($path)
     {
         # code...
     }
