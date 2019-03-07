@@ -2,7 +2,6 @@
 
 namespace XigeCloud\Http\Controllers\API;
 
-use Hashids;
 use Storage; 
 use XigeCloud\Files\Handler;
 use Illuminate\Http\Request;
