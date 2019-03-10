@@ -64,7 +64,8 @@ function genSidebarConfig (title) {
       children: [
         '',
         'categories',
-        'roles'
+        'roles',
+        'tags'
       ]
     }
   ]
