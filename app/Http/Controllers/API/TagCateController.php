@@ -15,7 +15,10 @@ class TagCateController extends Controller
      */
     public function index()
     {
-        $list = TagCategory::query()->get();
+        $list = TagCategory::query()
+            ->filterByQueryString()
+            ->sortByQueryString()
+            ->withPagination();
 
         return response()->json($list);
     }
