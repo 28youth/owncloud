@@ -17,9 +17,7 @@ class RoleController extends Controller
     public function index(Request $request)
     {
         $list = Role::query()
-            ->with(['staff', 'categories' => function ($query) {
-                return $query->select('id', 'name');
-            }])
+            ->with(['staff', 'categories'])
             ->filterByQueryString()
             ->sortByQueryString()
             ->withPagination();
