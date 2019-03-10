@@ -18,7 +18,7 @@ class Policy extends Model
     	'port',
     	'username',
     	'root',
-    	'privatekey',
+    	'privateKey',
     	'timeout',
     ];
 

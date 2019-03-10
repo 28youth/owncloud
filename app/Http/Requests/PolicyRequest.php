@@ -30,7 +30,7 @@ class PolicyRequest extends FormRequest
             'host' => 'required_if:driver,sftp|ipv4',
             'port' => 'required_if:driver,sftp|numeric',
             'username' => 'required_if:driver,sftp|max:20',
-            'privatekey' => 'required_if:driver,sftp',
+            'privateKey' => 'required_if:driver,sftp',
             'timeout' => 'numeric',
         ];
         if (strtolower($this->getMethod()) === 'patch') {
