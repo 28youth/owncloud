@@ -65,7 +65,10 @@ function genSidebarConfig (title) {
         '',
         'categories',
         'roles',
-        'tags'
+        'tags',
+        'tag-category',
+        'policies',
+        'file-manage'
       ]
     }
   ]
