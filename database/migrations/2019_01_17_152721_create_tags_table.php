@@ -20,8 +20,7 @@ class CreateTagsTable extends Migration
             $table->char('description', 50)->nullable()->comment('标签说明');
 
             $table->timestamps();
-            // 复合唯一健
-            $table->unique(['name', 'tag_category_id']);
+            $table->unique('name');
         });
     }
 

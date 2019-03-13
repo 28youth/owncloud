@@ -21,11 +21,11 @@ class FileResource extends JsonResource
             'number' => $this->number,
             'origin_name' => $this->origin_name,
             'uploader' => $this->uploader,
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
             'download_sum' => $this->download_sum,
             'tags' => $this->tags,
             'category' => $this->category->only(['id', 'name', 'full_name']),
+            'created_at' => $this->created_at->toDateTimeString(),
+            'updated_at' => $this->updated_at->toDateTimeString(),
         ];
         // return parent::toArray($request);
     }

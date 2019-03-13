@@ -28,6 +28,7 @@ class CreateFilesTable extends Migration
             $table->mediumInteger('download_sum')->defaule(0)->comment('下载次数');
 
             $table->timestamps();
+            $table->unique('number');
         });
     }
 
