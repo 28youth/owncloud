@@ -52,4 +52,12 @@ return [
     	'privatekey' => '服务器密钥',
     	'timeout' => '超时时间（秒）',
 	],
+	'mkfile' => [
+		'tags.*' => '标签ID', 
+        'cate_id' => '文件分类',
+        'block_list' => '文件块',
+        'filename' => '文件名',
+        'filesize' => '文件大小',
+        'extension' => '文件扩展',
+	],
 ];
