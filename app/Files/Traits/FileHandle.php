@@ -6,7 +6,7 @@ use Cache;
 use phpseclib\Net\SSH2;
 use phpseclib\Crypt\RSA;
 
-trait BashHandle
+trait FileHandle
 {   
     /**
      * 获取服务器SSH2执行对象.
@@ -28,25 +28,32 @@ trait BashHandle
 
     protected function getConfig()
     {
-        $config = Cache::get('policies_config_list')[$this->connect];//$this->category->policy;
-
-        if (empty($config)) {
-
-            abort(500, '缺少上传配置，请联系管理员～');
-        }
+        $config = Cache::get('policies_mapwithname')[$this->connect];
+        
+        if (empty($config)) abort(500, '缺少上传配置');
 
         return $config;
     }
 
-    protected function exec($bash)
+    protected function getPath($path)
     {
-        $config = $this->getConfig();
+        $root = storage_path($path);
+        if ($this->getConfig()['driver'] === 'sftp') {
+            return  sprintf(
+                '%s%s', 
+                $this->filesystem()->getAdapter()->getRoot(),
+                $path
+            );
+        }
+        return $root;
+    }
 
-        if ($config['driver'] === 'sftp') {
-
+    protected function exec($bash): string
+    {
+        $driver = $this->getConfig()['driver'];
+        if ($driver === 'sftp') {
             return $this->bash()->exec($bash);
-
-        } elseif ($config['driver'] === 'local') {
+        } elseif ($driver === 'local') {
 
             return exec("$bash 2>&1");
         }
@@ -61,7 +68,7 @@ trait BashHandle
      * 
      * @return error||empty
      */
-    public function execMerge($savepath, $savename, $block_list, callable $call)
+    public function mergeFile($savepath, $savename, $block_list)
     {
         $ids = implode(" ", $block_list);
 
@@ -83,9 +90,7 @@ trait BashHandle
 
             cat $ids > $savename
 EOF;
-        $response = $this->exec($bash);
-
-        return call_user_func_array($call, [$response, $savename]);
+        return $this->exec($bash);
     }
 
     /**
@@ -150,18 +155,18 @@ EOF;
             extension="\${filename##*.}"
             filename="\${filename%.*}"
             if [ \$extension = "zip" ];then
-                mkdir \$filename && unzip -o $filename -d \$filename
+                mkdir \$filename && unzip -o $filename -d \$filename &> /dev/null
             elif [ \$extension = 'tar' ];then
-                mkdir \$filename && tar -xvf $filename -C \$filename
+                mkdir \$filename && tar -xvf $filename -C \$filename &> /dev/null
             elif [ \$extension = 'gz' ];then
-                mkdir \$filename && tar -zxvf $filename -C \$filename
+                mkdir \$filename && tar -zxvf $filename -C \$filename &> /dev/null
             elif [ \$extension = 'bz2' ];then
-                mkdir \$filename && tar -jxvf $filename -C \$filename
+                mkdir \$filename && tar -jxvf $filename -C \$filename &> /dev/null
             else
                 echo "error 不支持的压缩包类型" && exit
             fi
-            #files=\$(ls \$filename)
-            #echo \$files
+            files=\$(ls \$filename)
+            echo \$files
 EOF;
             return $this->response($this->exec($bash));
     }
@@ -172,12 +177,6 @@ EOF;
         if (! empty($match['mark'])) {
             abort(500, $result);
         }
-
-        return preg_split('/[;\r\n]+/s', $result, PREG_SPLIT_NO_EMPTY);
-    }
-
-    public function deleteChunks($path)
-    {
-        # code...
+        return array_filter(preg_split('/[;\r\n]+/s', $result));
     }
 }

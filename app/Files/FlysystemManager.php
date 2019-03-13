@@ -129,21 +129,22 @@ class FlysystemManager extends AbstractManager
      */
     public function getPoliciesConfig()
     {
-        $cacheKey = 'policies_config_list';
-        if (Cache::has($cacheKey)) {
-            return Cache::get($cacheKey);
-        }
-        $local = $this->config->get('filesystems.disks.local');
-        $config = Policy::get()->mapWithKeys(function ($item) use ($local) {
-            $remote = collect($item)->except(['id', 'name']);
-            return [
-                $item->name => ($item->driver === 'local') ? $local : $remote
-            ];
-        })->toArray();
+        $cacheKey = 'policies_mapwithname';
 
-        Cache::forever($cacheKey, $config);
+        $policies = Cache::rememberForever($cacheKey, function() {
+
+            $local = $this->config->get('filesystems.disks.local');
+
+            return Policy::get()->mapWithKeys(function ($item) use ($local) {
+
+                $remote = collect($item)->except(['id', 'name']);
+
+                return [$item->name => ($item->driver === 'local') ? $local : $remote];
+                
+            })->toArray();
+        });
         
-        return $config;
+        return $policies;
     }
 
     /**
