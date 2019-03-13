@@ -46,32 +46,18 @@ class Handler
      */
     public function storage(Request $request, UploadedFile $file)
     {
-        $fileModel = $this->validateFileInDb($file, function (UploadedFile $file, string $hash) {
+        return $this->validateFileInDb($file, function (UploadedFile $file, string $hash) {
 
             $info = $this->makeFileInfo();
             $originame = $file->getClientOriginalName();
             $savepath = sprintf('%s%s%s', $info['path'], $info['number'], $originame);
 
             $response = $this->filesystem()->put($savepath, $file->get());
-            if ($response === false) {
-                return $response->json(['message' => '上传失败,请重试'], 500);
-            }
-            $fileModel = new FileModel();
-            $fileModel->setTable('files_'.$this->tabID);
-            $fileModel->hash = $hash;
-            $fileModel->number = $info['number'];
-            $fileModel->size = $file->getClientSize();
-            $fileModel->mime = $file->getClientMimeType();
-            $fileModel->user_id = request()->user()->staff_sn;
-            $fileModel->filename = $savepath;
-            $fileModel->category_id = $this->category->id;
-            $fileModel->origin_name = $originame;
-            $fileModel->saveOrFail();
+            
+            if ($response === false) abort(500, '上传失败,请重试');
 
-            return $fileModel;
+            return $this->saveInDb($savepath, $info['number'], $originame);
         });
-
-        return response()->json($fileModel, 201);
     }
 
     protected function validateFileInDb(UploadedFile $file, callable $call): FileModel
@@ -200,7 +186,7 @@ class Handler
         $fileModel->number = $number;
         $fileModel->filename = $path;
         $fileModel->origin_name = $filename;
-        $fileModel->hash = request()->filehash;
+        $fileModel->hash = md5(rand(111,999));
         $fileModel->category_id = $this->category->id;
         $fileModel->user_id = request()->user()->staff_sn;
         $fileModel->saveOrFail();
