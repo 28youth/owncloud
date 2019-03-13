@@ -5,6 +5,7 @@ namespace XigeCloud\Files;
 use Cache;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use XigeCloud\Models\Policy;
 use XigeCloud\Models\Category;
 use League\Flysystem\Filesystem;
 use Illuminate\Http\UploadedFile;
@@ -13,11 +14,11 @@ use XigeCloud\Files\Plugin\MergeFile;
 use XigeCloud\Files\FlysystemManager;
 use XigeCloud\Models\File as FileModel;
 use XigeCloud\Models\Chunk as ChunkModel;
-use XigeCloud\Files\Traits\BashHandle;
+use XigeCloud\Files\Traits\FileHandle;
 
 class Handler
 {   
-    use BashHandle;
+    use FileHandle;
 
     protected $tabID;
 
@@ -25,11 +26,14 @@ class Handler
 
     protected $category;
 
+    protected $filesystem;
+
     public function __construct(int $cate_id)
     {
         $this->category = Category::find($cate_id);
         $this->connect = $this->cacheConnectName();
         $this->setTabId($cate_id);
+        $this->setFilesystem();
     }
 
     /**
@@ -42,8 +46,6 @@ class Handler
      */
     public function storage(Request $request, UploadedFile $file)
     {
-        $res = $this->unzip('/data/chunks', 'chunks.tar.bz2');
-        return response()->json($res);
         $fileModel = $this->validateFileInDb($file, function (UploadedFile $file, string $hash) {
 
             $info = $this->makeFileInfo();
@@ -101,117 +103,109 @@ class Handler
     }
 
     /**
-     * 检查分片是否上传(返回未上传的分片索引).
-     * 
-     * @param  array  $block_list
-     * @return array
-     */
-    public function checkChunks(array $block_list)
-    {
-        $uploaded = [];
-        $filesystem = $this->filesystem();
-        collect($block_list)->map(function ($md5key, $key) use (&$uploaded, $filesystem)
-        {
-            $chunkpath = sprintf('/chunks/%s.chunk', $md5key);
-            if (! $filesystem->has($chunkpath)) {
-
-                array_push($uploaded, $key);
-            }
-        });
-
-        // 全部分片都存在 ？impossible
-        if (empty($uploaded)) {
-            # code...
-        }
-        
-        return $uploaded;
-    }
-
-    /**
-     * 完成上传组织分片生成文件.
+     * 合并分片并保存文件信息.
      * 
      * @param  array $block_list
      * @return mixed
      */
-    public function createFile($block_list)
+    public function createFile($block_list, $filename)
     {
-        $savename = Str::random();
-        $filesystem = $this->filesystem();
-        $driver = $this->getConfig()['driver'];
-        if ($driver === 'local') {
-            $savepath = storage_path('chunks');
-        } else {
-            $savepath = $filesystem->getAdapter()->getRoot().'chunks';
-        }
-        return $this->execMerge($savepath, $savename, $block_list, function ($cb, $filename) use (
-            $filesystem
-        ) {
-            if (! empty($cb)) abort(500, $cb);
+        $chunkpath = $this->getPath('chunks');
+        $savename = sprintf('%s%s', Str::random(), $filename);
 
-            // 移动临时文件到存储位置
-            $info = $this->makeFileInfo();
-            $originame = request()->filename;
-            $tmpfile = sprintf('/chunks/%s', $filename);
-            $savepath = sprintf('%s%s%s', $info['path'], $info['number'], $originame);
-            $response = $filesystem->copy($tmpfile, $savepath);
-            if ($response === false) {
-                return $response->json(['message' => '上传失败'], 500);
-            }
-            
-            $fileModel = new FileModel();
-            $fileModel->setTable('files_'.$this->tabID);
-            $fileModel->hash = request()->filehash;
-            $fileModel->number = $info['number'];
-            $fileModel->size = $filesystem->getSize($savepath);
-            $fileModel->mime = $filesystem->getMimetype($savepath);
-            $fileModel->user_id = request()->user()->staff_sn;
-            $fileModel->filename = $savepath;
-            $fileModel->category_id = $this->category->id;
-            $fileModel->origin_name = $originame;
-            $fileModel->saveOrFail();
+        $merge = $this->mergeFile($chunkpath, $savename, $block_list);
+        if (! empty($merge)) abort(500, $merge);
 
-            return $fileModel;
-        });
+        $tmpfile = sprintf('/chunks/%s', $savename);
+
+        return $this->moveInPath($tmpfile, $filename);
     }
 
-    // 老版本合并分片（弃用）
-    protected function makeFile(string $hash, callable $call)
+    /**
+     * 创建压缩包文件.
+     * 
+     * @param  array $block_list
+     * @param  string $filename
+     * 
+     * @return mixed
+     */
+    public function createCompressFile($block_list, $filename)
+    {
+        $chunkpath = $this->getPath('chunks');
+        $savename = sprintf('%s%s', Str::random(), $filename);
+
+        // 合并分片
+        $merge = $this->mergeFile($chunkpath, $savename, $block_list);
+        if (! empty($merge)) abort(500, $merge);
+
+        // 解压缩
+        $files = $this->unzip($chunkpath, $savename);
+        if (! empty($files)) {
+            $name = explode('.', $savename);
+            $basepath = sprintf('/chunks/%s', reset($name));
+
+            // 单文件操作
+            foreach ($files as $key => $file) {
+                $tmpfile = sprintf('%s/%s', $basepath, $file);
+                $this->moveInPath($tmpfile, $filename);
+            }
+        }
+        return response()->json(['message' => '操作成功']);
+    }
+
+    /**
+     * 将临时文件移动到存储位置.
+     * 
+     * @param  string $tmpfile
+     * @param  string $filename
+     * 
+     * @return mixed
+     */
+    protected function moveInPath($tmpfile, $filename)
     {
         $filesystem = $this->filesystem();
-        $chunks = ChunkModel::where('file_hash', $hash)
-            ->orderBy('chunk_id', 'asc')
-            ->get();
+        $info = $this->makeFileInfo();
+        $savepath = sprintf(
+            '%s%s%s',
+            $info['path'],
+            $info['number'],
+            $filename
+        );
+        $response = $filesystem->copy($tmpfile, $savepath);
+        if ($response === false) abort(500, '上传失败');
 
-        // 生成空文件
-        $fileName = '/chunks/'.Str::random(8);
-        $fileObj = $filesystem->put($fileName, null);
+        return $this->saveInDb($savepath, $info['number'], $filename);
+    }
 
-        // 组装文件块
-        try {
-            $chunks->map(function ($item) use ($fileObj, $fileName, $filesystem) {
-                $chunkPath = '/chunks/'.$item->chunk_name.'.chunk';
-                $chunkObj = $filesystem->read($chunkPath);
-                if (!$chunkObj || !$fileObj) {
-                    abort(500, '文件创建失败');
-                }
-                $filesystem->addPlugin(new MergeFile);
-                $filesystem->append($fileName, $chunkObj);
+    /**
+     * 保存文件信息到数据库.
+     * 
+     * @param  string $path
+     * @param  string $number
+     * @param  string $filename
+     * 
+     * @return mixed
+     */
+    protected function saveInDb($path ,$number, $filename)
+    {
+        $filesystem = $this->filesystem();
+        $size = $filesystem->getSize($path);
+        $mime = $filesystem->getMimetype($path);
+        $table = sprintf('files_%s', $this->tabID);
 
-                $item->delete();
-                $filesystem->delete($chunkPath);
-            });
-        } catch (\Exception $e) {
-            $chunks->map(function ($item) use ($filesystem) {
-                $item->delete();
-                $filesystem->delete($chunkPath);
-            });
+        $fileModel = new FileModel();
+        $fileModel->setTable($table);
+        $fileModel->size = $size;
+        $fileModel->mime = $mime;
+        $fileModel->number = $number;
+        $fileModel->filename = $path;
+        $fileModel->origin_name = $filename;
+        $fileModel->hash = request()->filehash;
+        $fileModel->category_id = $this->category->id;
+        $fileModel->user_id = request()->user()->staff_sn;
+        $fileModel->saveOrFail();
 
-            abort(500, '文件创建失败，请重试！');
-        }
-
-        $hash = md5_file($filesystem->getAdapter()->applyPathPrefix($fileName));
-
-        return call_user_func_array($call, [$fileName, $hash]);
+        return $fileModel;
     }
 
     /**
@@ -298,6 +292,11 @@ class Handler
         return app(FlysystemManager::class)->connection($this->connect);
     }
 
+    protected function setFilesystem()
+    {
+        $this->filesystem = $this->filesystem();
+    }
+
     /**
      * 缓存操作分类配置的策略名称.
      * 
@@ -305,21 +304,62 @@ class Handler
      */
     protected function cacheConnectName(): string
     {
-        $cacheKey = sprintf('policyName_%s', $this->category->id);
+        $cacheKey = 'policies_mapwithkeys';
+        $policies = Cache::rememberForever($cacheKey, function() {
+            return Policy::get()->mapWithKeys(function ($item) {
+                return [$item->id => $item->name];
+            });
+        });
 
-        if (! Cache::has($cacheKey)) {
-            $name = $this->category->policy['name'] ?? '';
-            Cache::forever($cacheKey, $name);
+        if ($policies->has($this->category->policy_id)) {
+            return $policies->get($this->category->policy_id); 
         }
-
-        return Cache::get($cacheKey);
+        abort(500, '当前分类未配置上传服务器');
     }
 
-    /**
-     * 获取当前分类操作表ID
-     */
+    // 获取文件表ID
     public function getTableID()
     {
         return $this->tabID;
+    }
+
+    // 老版本合并分片（弃用）
+    protected function makeFile(string $hash, callable $call)
+    {
+        $filesystem = $this->filesystem();
+        $chunks = ChunkModel::where('file_hash', $hash)
+            ->orderBy('chunk_id', 'asc')
+            ->get();
+
+        // 生成空文件
+        $fileName = '/chunks/'.Str::random(8);
+        $fileObj = $filesystem->put($fileName, null);
+
+        // 组装文件块
+        try {
+            $chunks->map(function ($item) use ($fileObj, $fileName, $filesystem) {
+                $chunkPath = '/chunks/'.$item->chunk_name.'.chunk';
+                $chunkObj = $filesystem->read($chunkPath);
+                if (!$chunkObj || !$fileObj) {
+                    abort(500, '文件创建失败');
+                }
+                $filesystem->addPlugin(new MergeFile);
+                $filesystem->append($fileName, $chunkObj);
+
+                $item->delete();
+                $filesystem->delete($chunkPath);
+            });
+        } catch (\Exception $e) {
+            $chunks->map(function ($item) use ($filesystem) {
+                $item->delete();
+                $filesystem->delete($chunkPath);
+            });
+
+            abort(500, '文件创建失败，请重试！');
+        }
+
+        $hash = md5_file($filesystem->getAdapter()->applyPathPrefix($fileName));
+
+        return call_user_func_array($call, [$fileName, $hash]);
     }
 }
