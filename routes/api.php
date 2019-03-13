@@ -28,6 +28,9 @@ Route::group(['middleware' => 'auth:api'], function (RouteContract $api) {
 	// 文件分块上传
 	$api->post('file/chunk', API\FileController::class.'@chunk');
 
+	// 生成文件
+	$api->post('file/mkfile', API\FileController::class.'@mkfile');
+
 	// 文件操作
 	$api->apiResource('files', API\FileController::class);
 

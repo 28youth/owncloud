@@ -2,6 +2,7 @@
 
 namespace XigeCloud\Http\Controllers\API;
 
+use Hashids;
 use Storage; 
 use XigeCloud\Files\Handler;
 use Illuminate\Http\Request;
@@ -25,12 +26,13 @@ class FileController extends Controller
 
     public function index(Request $request)
     {
-        $publisher = $request->query('publisher');
+        $uploader = $request->query('uploader');
 
         $file = FileModel::cate($this->handler->getTableID())
-            ->when(!empty($publisher), function ($query) use ($publisher) {
-                return $query->byUser($publisher);
+            ->when(!empty($uploader), function ($query) use ($uploader) {
+                return $query->byUser($uploader);
             })
+            ->with(['category', 'tags'])
             ->filterByQueryString()
             ->sortByQueryString()
             ->withPagination();
@@ -45,11 +47,26 @@ class FileController extends Controller
         return FileResource::collection($file);
     }
     
+    /**
+     * 单位文件上传.
+     * 
+     * @param  FileUpload $request
+     * @return mixed
+     */
     public function store(FileUpload $request)
     {
         $file = $request->file('file');
-        $cateID = $request->input('cate_id');
-        return (new Handler($cateID))->storage($request, $file);
+
+        return $this->handler->storage($request, $file);
+    }
+
+    public function batchStore(Request $request)
+    {
+        $type = $request->input('uptype', 'file');
+        if ($type === 'file') {
+            
+            return $this->handler->setChunk($chunk);
+        }
     }
 
     /**
@@ -82,5 +99,20 @@ class FileController extends Controller
         $chunk = $request->file('file');
 
         return $this->handler->setChunk($chunk);
+    }
+
+    public function mkfile(Request $request)
+    {
+        $type = $request->input('type');
+        $filename = $request->input('name');
+        $blockList = $request->input('block_list');
+        if ($type === 'compress') {
+            $filename = $request->input('name');
+            $block = $request->input('block_list');
+
+            return $this->handler->createCompressFile($blockList, $filename);
+        }
+
+        return $this->handler->createFile($blockList, $filename);
     }
 }

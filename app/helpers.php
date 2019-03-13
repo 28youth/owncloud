@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Artisan;
 
 if (!function_exists('getSize')) {
     /**
@@ -133,5 +135,24 @@ if (!function_exists('makeFileName')) {
         ]);
 
         return strtr($rule, $policy);
+    }
+}
+
+if (!function_exists('cacheclear')) {
+    /**
+     * 清除缓存.
+     * 
+     * @param  boolean $all 是否清除所有
+     * @return void
+     */
+    function cacheclear($all = false)
+    {
+        if ($all === true) {
+            Artisan::call('cache:clear');
+        }
+        // 上传服务器配置 (name => item)
+        Cache::forget('policies_mapwithkeys');
+        // 上传服务器配置（id => name）
+        Cache::forget('policies_mapwithname');
     }
 }
