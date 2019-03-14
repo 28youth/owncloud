@@ -121,10 +121,9 @@ EOF;
      * 
      * @return error||empty
      */
-    public function execMove($origin_path, $save_path)
+    public function move($origin_path, $save_path)
     {
         if (empty($save_path) || empty($origin_path)) {
-
             abort(500, '移动文件路径错误～');
         }
 
