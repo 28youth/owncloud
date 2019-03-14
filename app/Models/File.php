@@ -14,6 +14,8 @@ class File extends BaseModel
 
 	protected $keyType = 'string';
 
+	public $incrementing = false;
+
 	protected $appends = ['uploader'];
 	
 	public function tags()
@@ -36,7 +38,7 @@ class File extends BaseModel
 	 */
 	public function scopeByUser(Builder $query, string $username)
 	{
-		$staff = app('ssoService')->getStaff([
+		$staff = app('oaServer')->getStaff([
 			'filters' => "realname={$username};status_id>=0"
 		]);
 
@@ -47,7 +49,7 @@ class File extends BaseModel
 
 	public function getUploaderAttribute()
 	{
-		$staff = app('ssoService')->getStaff($this->user_id);
+		$staff = app('oaServer')->getStaff($this->user_id);
 
 		return !empty($staff) ? Arr::only($staff, ['staff_sn', 'realname']) : [];
 	}

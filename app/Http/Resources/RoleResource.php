@@ -40,7 +40,7 @@ class RoleResource extends JsonResource
         $list = [];
         if ($staff->isNotEmpty()) {
             $staff_sn = $staff->pluck('staff_sn');
-            $staff = app('ssoService')->getStaff(['filters' => "staff_sn={$staff_sn};status_id>=0"]);
+            $staff = app('oaServer')->getStaff(['filters' => "staff_sn={$staff_sn};status_id>=0"]);
             $list = array_map(function ($v) {
                 return [
                     'staff_sn' => $v['staff_sn'],

@@ -14,7 +14,7 @@ class CreateFileHasTagsTable extends Migration
     public function up()
     {
         Schema::create('file_has_tags', function (Blueprint $table) {
-            $table->integer('file_number');
+            $table->string('file_number', 32);
             $table->integer('tag_id');
 
             $table->primary(['file_number', 'tag_id']);

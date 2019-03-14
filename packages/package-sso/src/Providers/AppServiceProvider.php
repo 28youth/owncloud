@@ -64,7 +64,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function registerSingletions()
     {
-        $this->app->singleton('ssoService', function ($app) {
+        $this->app->singleton('oaServer', function ($app) {
             return new RequestSSOService($app->make('request'));
         });
     }
