@@ -101,6 +101,12 @@ class FileController extends Controller
         return $this->handler->setChunk($chunk);
     }
 
+    /**
+     * 完成上传通知并生成文件.
+     * 
+     * @param  Request $request
+     * @return mixed
+     */
     public function mkfile(Request $request)
     {
         $type = $request->input('type');

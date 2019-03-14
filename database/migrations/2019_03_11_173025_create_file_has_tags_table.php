@@ -16,9 +16,8 @@ class CreateFileHasTagsTable extends Migration
         Schema::create('file_has_tags', function (Blueprint $table) {
             $table->integer('file_number');
             $table->integer('tag_id');
-            $table->mediumInteger('category_id');
 
-            $table->primary(['file_number', 'category_id']);
+            $table->primary(['file_number', 'tag_id']);
         });
     }
 

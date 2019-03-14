@@ -10,11 +10,15 @@ class File extends BaseModel
 {
 	use ListScopes;
 
+	protected $primaryKey = 'number';
+
+	protected $keyType = 'string';
+
 	protected $appends = ['uploader'];
 	
 	public function tags()
 	{
-		return $this->belongsToMany(Tag::class, 'file_has_tags');
+		return $this->belongsToMany(Tag::class, 'file_has_tags', 'file_number', 'tag_id');
 	}
 
 	public function category()
