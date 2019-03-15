@@ -16,12 +16,15 @@ class FileLogController extends Controller
 			->withPagination();
 
 		if ($request->has('page')) {
-
             return array_merge($list, [
                 'data' => FileLogResource::collection($list['data'])
             ]);
         }
-
         return FileLogResource::collection($list);
+	}
+
+	public function fileUpdate(Request $request)
+	{
+		
 	}
 }

@@ -1,7 +1,7 @@
 <?php 
 
 return [
-
+	'file' => [],
 	// 文件分类
 	'category' => [
 		'name' => '分类名称',

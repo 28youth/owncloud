@@ -24,6 +24,19 @@ class FileLog extends Model
 
     protected $appends = ['operater'];
 
+    /**
+     * 操作名称本地化.
+     * @var array
+     */
+    protected $typeLocalization;
+
+    public function __construct(array $attributes = [])
+    {
+        parent::__construct($attributes);
+
+        $this->typeLocalization = trans('fields.file');
+    }
+    
     public function getOperaterAttribute()
     {
         $staff = app('oaServer')->getStaff($this->user_id);
@@ -31,8 +44,8 @@ class FileLog extends Model
         return !empty($staff) ? Arr::only($staff, ['staff_sn', 'realname']) : [];
     }
 
-    public function getChangesAttribute($value)
+    public function getOperateTypeAttribute($value)
     {
-    	return $value;
+        return $this->typeLocalization[$value] ?? $value;
     }
 }

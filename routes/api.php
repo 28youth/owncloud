@@ -22,6 +22,9 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 Route::group(['middleware' => 'auth:api'], function (RouteContract $api) {
 
+	// 获取文件日志列表
+	$api->get('file/logs', API\FileLogController::class.'@index');
+	
 	// 文件分块上传前查询
 	$api->get('file/chunk', API\FileController::class.'@rapidUpload');
 
