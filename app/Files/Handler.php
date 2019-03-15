@@ -53,7 +53,7 @@ class Handler
             $savepath = sprintf('%s%s%s', $info['path'], $info['number'], $originame);
 
             $response = $this->filesystem()->put($savepath, $file->get());
-            
+
             if ($response === false) abort(500, '上传失败,请重试');
 
             return $this->saveInDb($savepath, $info['number'], $originame);
@@ -190,6 +190,9 @@ class Handler
         $fileModel->category_id = $this->category->id;
         $fileModel->user_id = request()->user()->staff_sn;
         $fileModel->saveOrFail();
+        if (!empty(request()->tags)) {
+            $fileModel->tags()->attach(request()->tags);
+        }
 
         return $fileModel;
     }
