@@ -6,29 +6,23 @@ use Hashids;
 use Storage; 
 use XigeCloud\Files\Handler;
 use Illuminate\Http\Request;
+use XigeCloud\Services\FileUpdate;
 use XigeCloud\Models\File as FileModel;
 use XigeCloud\Http\Requests\FileUpload;
+use XigeCloud\Http\Requests\FileRequest;
 use XigeCloud\Http\Requests\ChunkUpload;
 use XigeCloud\Http\Requests\UploadRequest;
 use XigeCloud\Http\Resources\FileResource;
 
 class FileController extends Controller
 {
-    protected $cateID;
-
     protected $handler;
-
-    public function __construct(Request $request)
-    {
-        $this->cateID = $request->cate_id;
-        $this->handler = new Handler($this->cateID);
-    }
 
     public function index(Request $request)
     {
         $uploader = $request->query('uploader');
 
-        $file = FileModel::cate($this->handler->getTableID())
+        $file = FileModel::cate($this->resolveHandler()->getTableID())
             ->when(!empty($uploader), function ($query) use ($uploader) {
                 return $query->byUser($uploader);
             })
@@ -57,7 +51,7 @@ class FileController extends Controller
     {
         $file = $request->file('file');
 
-        return $this->handler->storage($request, $file);
+        return $this->resolveHandler()->storage($request, $file);
     }
 
     public function batchStore(Request $request)
@@ -65,7 +59,7 @@ class FileController extends Controller
         $type = $request->input('uptype', 'file');
         if ($type === 'file') {
             
-            return $this->handler->setChunk($chunk);
+            return $this->resolveHandler()->setChunk($chunk);
         }
     }
 
@@ -79,7 +73,7 @@ class FileController extends Controller
      */
     public function rapidUpload(UploadRequest $request)
     {
-        $file = FileModel::cate($this->handler->getTableID())
+        $file = FileModel::cate($this->resolveHandler()->getTableID())
             ->where('md5', $request->md5)
             ->first();
         
@@ -98,7 +92,7 @@ class FileController extends Controller
     {
         $chunk = $request->file('file');
 
-        return $this->handler->setChunk($chunk);
+        return $this->resolveHandler()->setChunk($chunk);
     }
 
     /**
@@ -116,9 +110,33 @@ class FileController extends Controller
             $filename = $request->input('name');
             $block = $request->input('block_list');
 
-            return $this->handler->createCompressFile($blockList, $filename);
+            return $this->resolveHandler()->createCompressFile($blockList, $filename);
         }
 
-        return $this->handler->createFile($blockList, $filename);
+        return $this->resolveHandler()->createFile($blockList, $filename);
+    }
+
+    /**
+     * 更新文件信息.
+     * 
+     * @param  FileRequest $request
+     * @return mixed
+     */
+    public function update(FileRequest $request)
+    {
+        $tabID = $this->resolveHandler()->getTableID();
+        $fileService = new FileUpdate($tabID, $request->number);
+        $response = $fileService->update($request->all());
+
+        return response()->json($response);
+    }
+
+    public function resolveHandler()
+    {
+        if (! ($this->handler instanceof Handler)) {
+            $this->handler = new Handler();
+        }
+
+        return $this->handler->setInit(request()->cate_id);
     }
 }

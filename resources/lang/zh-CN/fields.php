@@ -1,7 +1,19 @@
 <?php 
 
 return [
-	'file' => [],
+	'file' => [
+		'number' => '文件编号',
+		'hash' => '文件hash',
+		'mime' => '文件mime',
+		'size' => '文件大小',
+		'tags' => '标签',
+		'tags.*' => '标签ID',
+		'user_id' => '员工编号',
+		'filename' => '保存文件名',
+		'origin_name' => '文件名',
+		'category_id' => '文件分类',
+		'expired_at' => '过期时间',
+	],
 	// 文件分类
 	'category' => [
 		'name' => '分类名称',

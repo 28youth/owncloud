@@ -22,18 +22,17 @@ class Handler
 
     protected $tabID;
 
-    protected $connect;
-
     protected $category;
 
     protected $filesystem;
 
-    public function __construct(int $cate_id)
+    public function setInit(int $cate_id)
     {
         $this->category = Category::find($cate_id);
-        $this->connect = $this->cacheConnectName();
         $this->setTabId($cate_id);
-        $this->setFilesystem();
+        $this->filesystem();
+
+        return $this;
     }
 
     /**
@@ -271,27 +270,23 @@ class Handler
         }
     }
 
-    /**
-     * Get the filesystem.
-     * 
-     * @return \League\Flysystem\Filesystem
-     */
     protected function filesystem(): Filesystem
     {
-        return app(FlysystemManager::class)->connection($this->connect);
-    }
+        if (! ($this->filesystem instanceof Filesystem)) {
+            $this->filesystem =  app(FlysystemManager::class)->connection(
+                $this->getConnectName()
+            );
+        }
 
-    protected function setFilesystem()
-    {
-        $this->filesystem = $this->filesystem();
+        return $this->filesystem;
     }
-
+    
     /**
-     * 缓存操作分类配置的策略名称.
+     * 获取操作分类配置的策略名称.
      * 
      * @return string
      */
-    protected function cacheConnectName(): string
+    protected function getConnectName(): string
     {
         $cacheKey = 'policies_mapwithkeys';
         $policies = Cache::rememberForever($cacheKey, function() {

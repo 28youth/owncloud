@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Artisan;
 
@@ -130,11 +131,27 @@ if (!function_exists('makeFileName')) {
             '{originname}' => $origin,
             '{randomkey8}' => Str::random(8),
             '{randomkey16}' => Str::random(16),
-            '{staff_sn}' => request()->user()->staff_sn ?? 'staffsn',
-            '{shop_sn}' => request()->user()->shop_sn ?? 'shopsn',
+            '{staff_sn}' => getStaff(),
+            '{shop_sn}' => getStaff('shop_sn') ?: 'shopsn',
         ]);
 
         return strtr($rule, $policy);
+    }
+}
+
+if (!function_exists('getStaff')) {
+    /**
+     * 获取用户信息.
+     * 
+     * @param  string $clumn
+     * @return mixed
+     */
+    function getStaff($clumn = '')
+    {
+        if (!empty($clumn)) {
+            return Auth::user()[$clumn];
+        }
+        return Auth::id();
     }
 }
 
