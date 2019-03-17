@@ -26,6 +26,7 @@ class CreateFilesTable extends Migration
             $table->decimal('height', 8, 2)->nullable()->comment('图片高');
             $table->mediumInteger('category_id')->comment('所属分类');
             $table->mediumInteger('download_sum')->defaule(0)->comment('下载次数');
+            $table->dateTime('expired_at')->nullable()->comment('文件过期时间');
 
             $table->timestamps();
             $table->unique('number');

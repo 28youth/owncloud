@@ -105,8 +105,8 @@ class CategoryController extends Controller
         $table = 'files_'.$id;
 
         if (Schema::hasTable($table)) {
-
-            Schema::dropIfExists($table);
+            return fasle;
+            // Schema::dropIfExists($table);
         }
         Schema::create($table, function (Blueprint $table) {
             $table->increments('id');
@@ -121,8 +121,10 @@ class CategoryController extends Controller
             $table->decimal('height', 8, 2)->nullable()->comment('图片高');
             $table->mediumInteger('category_id')->comment('所属分类');
             $table->mediumInteger('download_sum')->defaule(0)->comment('下载次数');
+            $table->dateTime('expired_at')->nullable()->comment('文件过期时间');
 
             $table->timestamps();
+            $table->unique('number');
         });
     }
 }
