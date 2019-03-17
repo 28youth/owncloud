@@ -35,7 +35,8 @@ class MakeFile extends FormRequest
         $mimes = $cate->filetype ?? [];
 
         $rules = [
-            'tags.*' => 'array|exists:tags,id', 
+            'tags' => 'required|array',
+            'tags.*' => 'exists:tags,id', 
             'cate_id' => 'required|exists:categories,id',
             'block_list' => 'required|array',
             'filename' => 'required|max:100',

@@ -22,9 +22,4 @@ class FileLogController extends Controller
         }
         return FileLogResource::collection($list);
 	}
-
-	public function fileUpdate(Request $request)
-	{
-		
-	}
 }

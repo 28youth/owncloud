@@ -39,7 +39,7 @@ class BaseModel extends Model
     {
         $model = parent::newInstance($attributes, $exists);
 
-        $model->setCate($this->cate_id);
+        empty($this->cate_id) && $model->setCate($this->cate_id);
 
         return $model;
     }

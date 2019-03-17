@@ -8,49 +8,60 @@ use Illuminate\Database\Eloquent\Builder;
 
 class File extends BaseModel
 {
-	use ListScopes;
+    use ListScopes;
 
-	protected $primaryKey = 'number';
+    protected $primaryKey = 'number';
 
-	protected $keyType = 'string';
+    protected $keyType = 'string';
 
-	public $incrementing = false;
+    public $incrementing = false;
 
-	protected $appends = ['uploader'];
-	
-	public function tags()
-	{
-		return $this->belongsToMany(Tag::class, 'file_has_tags', 'file_number', 'tag_id');
-	}
+    protected $appends = ['uploader'];
 
-	public function category()
-	{
-		return $this->belongsTo(Category::class);
-	}
+    protected $fillable = ['origin_name', 'expired_at'];
+    
+    public function tags()
+    {
+        return $this->belongsToMany(Tag::class, 'file_has_tags', 'file_number', 'tag_id');
+    }
 
-	/**
-	 * search file by username.
-	 * 
-	 * @param  \Illuminate\Database\Eloquent\Builder $query
-	 * @param  string $username 
-	 * 
-	 * @return \Illuminate\Database\Eloquent\Builder;
-	 */
-	public function scopeByUser(Builder $query, string $username)
-	{
-		$staff = app('oaServer')->getStaff([
-			'filters' => "realname={$username};status_id>=0"
-		]);
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
 
-		$staffSn = !empty($staff) ? $staff[0]['staff_sn'] : '';
+    /**
+     * search file by username.
+     * 
+     * @param  \Illuminate\Database\Eloquent\Builder $query
+     * @param  string $username 
+     * 
+     * @return \Illuminate\Database\Eloquent\Builder;
+     */
+    public function scopeByUser(Builder $query, string $username)
+    {
+        $staff = app('oaServer')->getStaff([
+            'filters' => "realname={$username};status_id>=0"
+        ]);
 
-		return $query->where('user_id', $staffSn);
-	}
+        $staffSn = !empty($staff) ? $staff[0]['staff_sn'] : '';
 
-	public function getUploaderAttribute()
-	{
-		$staff = app('oaServer')->getStaff($this->user_id);
+        return $query->where('user_id', $staffSn);
+    }
 
-		return !empty($staff) ? Arr::only($staff, ['staff_sn', 'realname']) : [];
-	}
+    public function getUploaderAttribute()
+    {
+        $staff = app('oaServer')->getStaff($this->user_id);
+
+        return !empty($staff) ? Arr::only($staff, ['staff_sn', 'realname']) : [];
+    }
+    
+    public function getAbilitiesAttribute()
+    {
+        $roles = request()->user()->roles;
+        return \DB::table('role_has_categories')
+            ->where('category_id', $this->category_id)
+            ->whereIn('role_id', $roles)
+            ->first();
+    }
 }
