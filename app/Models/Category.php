@@ -10,20 +10,21 @@ class Category extends Model
 {
     use ListScopes;
     
-	protected $hidden = ['created_at', 'updated_at', 'deleted_at'];
+    protected $hidden = ['created_at', 'updated_at', 'deleted_at'];
 
     protected $fillable = [
-    	'name',
+        'name',
         'symbol',
         'full_name',
-    	'parent_id',
+        'parent_id',
         'policy_id',
         'max_size',
-    	'is_lock',
+        'is_lock',
+        'is_expired',
+        'allow_edit',
         'dirrule',
         'numberrule',
-    	'filetype',
-    	'description'
+        'filetype',
     ];
 
     protected $casts = [
@@ -41,7 +42,7 @@ class Category extends Model
 
     public function setParentIdAttribute($value)
     {
-    	$this->attributes['parent_id'] = !empty($value) ? $value : 0;
+        $this->attributes['parent_id'] = !empty($value) ? $value : 0;
     }
 
     public function setIsLockAttribute($value)

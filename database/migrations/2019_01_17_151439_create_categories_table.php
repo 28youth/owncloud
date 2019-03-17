@@ -22,13 +22,13 @@ class CreateCategoriesTable extends Migration
             $table->unsignedMediumInteger('parent_id')->default(0)->comment('上级分类ID');
             $table->unsignedTinyInteger('is_lock')->default(0)->comment('锁定 0:否 1:是');
             $table->unsignedTinyInteger('is_expired')->default(0)->comment('是否含过期文件 0:否 1:是');
+            $table->unsignedTinyInteger('allow_edit')->default(1)->comment('是否允许修改文件 0:否 1:是');
             $table->char('operate', 100)->default('')->comment('文件操作');
             $table->char('abilities', 100)->default('')->comment('操作权限');
             $table->char('dirrule', 100)->default('')->comment('目录规则');
             $table->char('numberrule', 100)->default('')->comment('编号规则');
             $table->char('filetype', 100)->default('')->comment('文件格式');
             $table->bigInteger('max_size')->default(0)->comment('单文件最大大小');
-            $table->char('description', 100)->default('')->comment('分类备注');
 
             $table->timestamps();
             $table->softDeletes();
