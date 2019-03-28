@@ -43,22 +43,22 @@ Route::group(['middleware' => 'auth:api'], function (RouteContract $api) {
 		$api->get('/', API\FileController::class.'@index');
 
 		// 上传单文件 /api/files
-		$api->post('/', API\FileController::class.'@store')->middleware('ability:upload');
+		$api->post('/', API\FileController::class.'@store')
+			->middleware('ability:upload');
 
-		// 编辑文件 /api/files
-		$api->patch('{file}', API\FileController::class.'@update')->middleware('ability:edit');
+		// 编辑文件 /api/files/:number
+		$api->patch('{number}', API\FileController::class.'@update')
+			->middleware('ability:edit');
 
-		// 删除文件 /api/files
-		$api->delete('{file}', API\FileController::class.'@delete')->middleware('ability:delete');;
+		// 删除文件 /api/files/:number
+		$api->delete('{number}', API\FileController::class.'@delete')
+			->middleware('ability:delete');;
+
+		// $api->apiResource('files', API\FileController::class);
 	});
-
-	// $api->apiResource('files', API\FileController::class);
 
 	// 文件分类
 	$api->apiResource('categories', API\CategoryController::class);
-
-	// 文件权限
-	$api->apiResource('abilities', API\AbilityController::class);
 
 	// 角色管理
 	$api->apiResource('roles', API\RoleController::class);
