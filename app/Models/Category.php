@@ -40,6 +40,11 @@ class Category extends Model
         });
     }
 
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class, 'role_has_categories', 'category_id', 'role_id');
+    }
+
     public function setParentIdAttribute($value)
     {
         $this->attributes['parent_id'] = !empty($value) ? $value : 0;

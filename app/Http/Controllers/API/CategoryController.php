@@ -42,10 +42,6 @@ class CategoryController extends Controller
     public function store(CategoryRequest $request, Category $category)
     {
         $category->fill($request->all());
-        $category->symbol = $request->symbol;
-        $category->is_lock = $request->is_lock;
-        $category->parent_id = $request->parent_id;
-
         return $category->getConnection()->transaction(function() use ($category) {
             $category->save();
 
@@ -66,7 +62,9 @@ class CategoryController extends Controller
      */
     public function show(Category $category)
     {
-        return response()->json($category);
+        // $category->load('roles');
+        
+        return CategoryResource::make($category);
     }
 
     /**
@@ -79,9 +77,6 @@ class CategoryController extends Controller
     public function update(CategoryRequest $request, Category $category)
     {
         $category->fill($request->all());
-        $category->symbol = $request->symbol;
-        $category->is_lock = $request->is_lock;
-        $category->parent_id = $request->parent_id;
         $category->save();
 
         return CategoryResource::make($category);
@@ -95,9 +90,12 @@ class CategoryController extends Controller
      */
     public function destroy(Category $category)
     {
-        $category->delete();
+        return $category->getConnection()->transaction(function () use ($category) {
+            $category->delete();
+            $category->roles()->detach();
 
-        return response()->json(null, 204);
+            return response()->json(null, 204);
+        });
     }
 
     protected function makeFileTable(int $id)
