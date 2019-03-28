@@ -4,10 +4,12 @@ namespace XigeCloud\Models;
 
 use XigeCloud\Models\Traits\ListScopes;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Role extends Model
 {
     use ListScopes;
+    use SoftDeletes;
     
     protected $hidden = ['created_at', 'updated_at'];
 

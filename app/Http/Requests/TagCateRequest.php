@@ -33,7 +33,7 @@ class TagCateRequest extends FormRequest
             $rules = array_merge($rules, [
                 'name' => [
                     'required',
-                    unique_validator('tag_categories'),
+                    unique_validator('tag_categories', true, true),
                 ],
             ]);
         }

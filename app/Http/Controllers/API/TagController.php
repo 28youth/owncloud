@@ -14,7 +14,7 @@ class TagController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
         $list = TagModel::query()
             ->with('category')
@@ -80,8 +80,12 @@ class TagController extends Controller
      */
     public function destroy(TagModel $tag)
     {
-        $tag->delete();
+        if (\DB::table('file_has_tags')->where('tag_id', $tag->id)->count()) {
+            $tag->delete();
 
-        return response()->json(null, 204);
+            return response()->json(null, 204);
+        }
+
+        return response()->json(['message' => '有文件使用该标签，不能删除'], 422);
     }
 }

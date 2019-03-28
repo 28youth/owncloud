@@ -37,7 +37,7 @@ class PolicyRequest extends FormRequest
             $rules = array_merge($rules, [
                 'name' => [
                     'required',
-                    unique_validator('policies')
+                    unique_validator('policies', true, true)
                 ],
             ]);
         }

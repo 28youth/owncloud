@@ -15,7 +15,7 @@ class TagCateController extends Controller
      */
     public function index()
     {
-        $list = TagCategory::query()
+        $list = TagCategory::withCount('tags')
             ->filterByQueryString()
             ->sortByQueryString()
             ->withPagination();
@@ -55,7 +55,7 @@ class TagCateController extends Controller
      * @param  TagCategory $category
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, TagCategory $category)
+    public function update(TagCateRequest $request, TagCategory $category)
     {
         $category->fill($request->all());
         $category->save();
@@ -71,8 +71,12 @@ class TagCateController extends Controller
      */
     public function destroy(TagCategory $category)
     {
-        $category->delete();
+        if (!$category->tags()->count()) {
+            $category->delete();
 
-        return response()->json(null, 204);
+            return response()->json(null, 204);
+        }
+
+        return response()->json(['message' => '该分类下还有标签存在，请先删除标签再删除分类'], 422);
     }
 }

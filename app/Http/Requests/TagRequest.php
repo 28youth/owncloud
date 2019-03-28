@@ -24,16 +24,17 @@ class TagRequest extends FormRequest
     public function rules()
     {
         $rules = [
-            'name' => 'required|max:20|unique:tags',
+            'name' => 'required|max:20|unique:tags,name',
             'tag_category_id' => 'required|exists:tag_categories,id',
-            'description' => 'string|max:50',
+            'description' => 'max:50',
         ];
         if (strtolower($this->getMethod()) === 'patch') {
             $rules = array_merge($rules, [
                 'name' => [
                     'required',
-                    unique_validator('tags')
-                ]
+                    unique_validator('tags', true, true)
+                ],
+                'tag_category_id' => 'exists:tag_categories,id'
             ]);
         }
 
