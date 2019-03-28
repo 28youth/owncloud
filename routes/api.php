@@ -22,20 +22,37 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 Route::group(['middleware' => 'auth:api'], function (RouteContract $api) {
 
-	// 获取文件日志列表
-	$api->get('file/logs', API\FileLogController::class.'@index');
-	
-	// 文件分块上传前查询
-	$api->get('file/chunk', API\FileController::class.'@rapidUpload');
+	$api->group(['prefix' => 'file'], function (RouteContract $api) {
 
-	// 文件分块上传
-	$api->post('file/chunk', API\FileController::class.'@chunk');
+		// 获取文件日志列表
+		$api->get('logs', API\FileLogController::class.'@index');
+		
+		// 文件分块上传前查询
+		$api->get('chunk', API\FileController::class.'@rapidUpload');
 
-	// 生成文件
-	$api->post('file/mkfile', API\FileController::class.'@mkfile');
+		// 文件分块上传
+		$api->post('chunk', API\FileController::class.'@chunk');
 
-	// 文件操作
-	$api->apiResource('files', API\FileController::class);
+		// 生成文件
+		$api->post('mkfile', API\FileController::class.'@mkfile');
+	});
+
+	$api->group(['prefix' => 'files'], function (RouteContract $api) {
+
+		// 获取文件列表 /api/files
+		$api->get('/', API\FileController::class.'@index');
+
+		// 上传单文件 /api/files
+		$api->post('/', API\FileController::class.'@store')->middleware('ability:upload');
+
+		// 编辑文件 /api/files
+		$api->patch('{file}', API\FileController::class.'@update')->middleware('ability:edit');
+
+		// 删除文件 /api/files
+		$api->delete('{file}', API\FileController::class.'@delete')->middleware('ability:delete');;
+	});
+
+	// $api->apiResource('files', API\FileController::class);
 
 	// 文件分类
 	$api->apiResource('categories', API\CategoryController::class);

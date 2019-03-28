@@ -32,7 +32,7 @@ class CategoryRequest extends FormRequest
             'filetype' => 'distinct|array',
             'max_size' => 'numeric',
             'is_lock' => 'numeric|in:0,1',
-            'is_expired' => 'numeric|in:0,1',
+            'allow_expire' => 'numeric|in:0,1',
             'description' => 'string|max:100',
         ];
         if (strtolower($this->getMethod()) === 'patch') {

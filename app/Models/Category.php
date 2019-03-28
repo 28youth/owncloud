@@ -20,7 +20,7 @@ class Category extends Model
         'policy_id',
         'max_size',
         'is_lock',
-        'is_expired',
+        'allow_expire',
         'allow_edit',
         'dirrule',
         'numberrule',

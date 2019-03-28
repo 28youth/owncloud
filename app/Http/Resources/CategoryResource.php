@@ -22,7 +22,7 @@ class CategoryResource extends JsonResource
             'parent_id' => $this->parent_id,
             'policy_id' => $this->policy_id,
             'is_lock' => $this->is_lock,
-            'is_expired' => $this->is_expired,
+            'allow_expire' => $this->allow_expire,
             'dirrule' => $this->dirrule,
             'numberrule' => $this->numberrule,
             'filetype' => $this->filetype,

@@ -21,8 +21,8 @@ class CreateCategoriesTable extends Migration
             $table->smallInteger('policy_id')->comment('分类文件策略');
             $table->unsignedMediumInteger('parent_id')->default(0)->comment('上级分类ID');
             $table->unsignedTinyInteger('is_lock')->default(0)->comment('锁定 0:否 1:是');
-            $table->unsignedTinyInteger('is_expired')->default(0)->comment('是否含过期文件 0:否 1:是');
-            $table->unsignedTinyInteger('allow_edit')->default(1)->comment('是否允许修改文件 0:否 1:是');
+            $table->unsignedTinyInteger('allow_expire')->default(1)->comment('允许设置有效期 0:否 1:是');
+            $table->unsignedTinyInteger('allow_edit')->default(1)->comment('允许修改文件 0:否 1:是');
             $table->char('operate', 100)->default('')->comment('文件操作');
             $table->char('abilities', 100)->default('')->comment('操作权限');
             $table->char('dirrule', 100)->default('')->comment('目录规则');

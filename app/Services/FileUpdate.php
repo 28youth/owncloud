@@ -20,6 +20,9 @@ class FileUpdate
     {
         $this->tabID = $tabID;
         $this->model = File::cate($tabID)->find($number);
+        if (empty($this->model)) {
+            abort(500, '文件编号不存在');
+        }
     }
 
     public function update(array $data)
