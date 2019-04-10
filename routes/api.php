@@ -54,6 +54,8 @@ Route::group(['middleware' => 'auth:api'], function (RouteContract $api) {
 		$api->delete('{number}', API\FileController::class.'@delete')
 			->middleware('ability:delete');;
 
+		// 获取文件详情 /api/files/:number
+		$api->get('{number}', API\FileController::class.'@show');
 		// $api->apiResource('files', API\FileController::class);
 	});
 

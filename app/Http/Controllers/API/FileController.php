@@ -20,24 +20,17 @@ class FileController extends Controller
 
     public function index(Request $request)
     {
-        $uploader = $request->query('uploader');
-
         $file = FileModel::cate($this->resolve()->getTableID())
-            ->when(!empty($uploader), function ($query) use ($uploader) {
-                return $query->byUser($uploader);
-            })
             ->with(['category', 'tags'])
             ->filterByQueryString()
             ->sortByQueryString()
             ->withPagination();
 
         if ($request->has('page')) {
-
             return array_merge($file, [
                 'data' => FileResource::collection($file['data'])
             ]);
         }
-
         return FileResource::collection($file);
     }
     
@@ -114,6 +107,24 @@ class FileController extends Controller
         }
 
         return $this->resolve()->createFile($blockList, $filename);
+    }
+
+    /**
+     * 获取文件详情.
+     * @param  Request $request
+     * @param  string  $number
+     * 
+     * @return \XigeCloud\Http\Resources\FileResource
+     */
+    public function show(Request $request, string $number)
+    {
+        $user = $request->user();
+        $file = FileModel::cate($this->resolve()->getTableID())
+            ->with(['category', 'tags'])
+            ->where('number', $number)
+            ->first();
+
+        return FileResource::make($file);
     }
 
     /**

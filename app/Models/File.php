@@ -30,21 +30,11 @@ class File extends BaseModel
         return $this->belongsTo(Category::class);
     }
 
-    /**
-     * search file by username.
-     * 
-     * @param  \Illuminate\Database\Eloquent\Builder $query
-     * @param  string $username 
-     * 
-     * @return \Illuminate\Database\Eloquent\Builder;
-     */
-    public function scopeByUser(Builder $query, string $username)
+    // 上传者ID搜索
+    public function scopeByUser(Builder $query, int $user_id)
     {
-        $staff = app('oaServer')->getStaff([
-            'filters' => "realname={$username};status_id>=0"
-        ]);
-
-        $staffSn = !empty($staff) ? $staff[0]['staff_sn'] : '';
+        $staff = app('oaServer')->getStaff($user_id);
+        $staffSn = !empty($staff) ? $staff['staff_sn'] : '';
 
         return $query->where('user_id', $staffSn);
     }
@@ -56,12 +46,9 @@ class File extends BaseModel
         return !empty($staff) ? Arr::only($staff, ['staff_sn', 'realname']) : [];
     }
     
+    // 当前文件操作权限
     public function getAbilitiesAttribute()
     {
-        $roles = request()->user()->roles;
-        return \DB::table('role_has_categories')
-            ->where('category_id', $this->category_id)
-            ->whereIn('role_id', $roles)
-            ->first();
+        return request()->user()->ability($this->category_id);
     }
 }
