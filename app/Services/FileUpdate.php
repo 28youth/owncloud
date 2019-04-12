@@ -91,7 +91,7 @@ class FileUpdate
     public function recordLog()
     {
         $model = new FileLogModel;
-        $model->user_id = getStaff();
+        $model->user_id = getAuthUser();
         $model->changes = $this->trans();
         $model->operate_at = now()->toDateString();
         $model->file_number = $this->model->number;

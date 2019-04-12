@@ -131,22 +131,22 @@ if (!function_exists('makeFileName')) {
             '{originname}' => $origin,
             '{randomkey8}' => Str::random(8),
             '{randomkey16}' => Str::random(16),
-            '{staff_sn}' => getStaff(),
-            '{shop_sn}' => getStaff('shop_sn') ?: 'shopsn',
+            '{staff_sn}' => getAuthUser(),
+            '{shop_sn}' => getAuthUser('shop_sn') ?: 'shopsn',
         ]);
 
         return strtr($rule, $policy);
     }
 }
 
-if (!function_exists('getStaff')) {
+if (!function_exists('getAuthUser')) {
     /**
      * 获取用户信息.
      * 
      * @param  string $clumn
      * @return mixed
      */
-    function getStaff($clumn = '')
+    function getAuthUser($clumn = '')
     {
         if (!empty($clumn)) {
             return Auth::user()[$clumn];

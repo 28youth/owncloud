@@ -14,6 +14,12 @@ class FileLogResource extends JsonResource
      */
     public function toArray($request)
     {
-        return parent::toArray($request);
+        return [
+            'id' => $this->id,
+            'changes' => $this->changes,
+            'file_number' => $this->file_number,
+            'operater' => $this->operater,
+            'created_at' => $this->created_at->toDateString(),
+        ];
     }
 }
